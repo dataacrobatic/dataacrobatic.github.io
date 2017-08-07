@@ -113,6 +113,17 @@
     </item>
     
     <item>
+      <title>testentry</title>
+      <link>/blog/testentry/</link>
+      <pubDate>Mon, 07 Aug 2017 18:50:37 +0200</pubDate>
+      
+      <guid>/blog/testentry/</guid>
+      <description>This is a regular text
+Add some code:
+test &amp;lt;- 100 - 2 + 27 </description>
+    </item>
+    
+    <item>
       <title>Hello world</title>
       <link>/post/hello-world/</link>
       <pubDate>Mon, 07 Aug 2017 00:00:00 +0000</pubDate>

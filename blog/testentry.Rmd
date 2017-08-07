@@ -1,0 +1,16 @@
+---
+date: 2017-08-07T18:50:37+02:00
+title: testentry
+type: "post"
+author: Janina Brandes
+description: "this is the summary"
+draft: false
+image: "blog/rain.jpeg"
+---
+ This is a regular text
+ 
+ Add some code:
+ 
+```{r}
+test <- 100 - 2 + 27
+```
