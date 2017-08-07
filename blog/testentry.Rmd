@@ -5,7 +5,7 @@ type: "post"
 author: Janina Brandes
 description: "this is the summary"
 draft: false
-image: "blog/rain.jpeg"
+image: "blog/tn.png"
 ---
  This is a regular text
  
