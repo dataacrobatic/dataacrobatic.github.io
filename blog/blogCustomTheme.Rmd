@@ -64,9 +64,9 @@ A boxplot with type="fill".
 
 ``` {r, echo=TRUE, out.width = '85%', fig.align = "center"}
 boxPlot <- ggplot(iris, aes(x=Species, y=Sepal.Width, fill=Species)) +
-geom_boxplot() + 
-labs(x="Species", y="Sepal Width (cm)", fill="Species", title="Iris Dataset") +
-customTheme(type="fill") 
+  geom_boxplot() + 
+  labs(x="Species", y="Sepal Width (cm)", fill="Species", title="Iris Dataset") +
+  customTheme(type="fill") 
 boxPlot
 ```
 
@@ -74,9 +74,9 @@ A scatterplot with type="colour".
 
 ```{r, echo=TRUE, out.width = '85%', fig.align = "center"}
 scatterPlot <- ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, colour=Species)) + 
-geom_point(size=3) + 
-labs(x="Sepal Length (cm)", y="Sepal Width (cm)", colour="Species", title="Iris Dataset") +
-customTheme(type="colour") 
+  geom_point(size=3) + 
+  labs(x="Sepal Length (cm)", y="Sepal Width (cm)", colour="Species", title="Iris Dataset") +
+  customTheme(type="colour") 
 scatterPlot
 ```
 
@@ -84,10 +84,10 @@ A histogramm with type="fill".
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, out.width = '85%', fig.align = "center"}
 histo <- ggplot(iris, aes(Sepal.Length, fill=Species)) + 
-geom_histogram() + 
-facet_grid(. ~ Species) +
-labs(x="Sepal Length (cm)", y="Sepal Width (cm)", fill="Species", title="Iris Dataset") +
-customTheme(type="fill") 
+  geom_histogram() + 
+  facet_grid(. ~ Species) +
+  labs(x="Sepal Length (cm)", y="Sepal Width (cm)", fill="Species", title="Iris Dataset") +
+  customTheme(type="fill") 
 histo
 ``` 
 
@@ -102,7 +102,7 @@ dat <- data.frame(
 
 scatterPlot2 <- ggplot(dat, aes(x, y, colour=z)) +
   geom_point(size=3) +
-customTheme(type="gradient2") 
+  customTheme(type="gradient2") 
 scatterPlot2
 ```
 

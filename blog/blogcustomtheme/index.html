@@ -144,24 +144,24 @@
 }</code></pre>
 <p>Create some test figures. A boxplot with type=“fill”.</p>
 <pre class="r"><code>boxPlot &lt;- ggplot(iris, aes(x=Species, y=Sepal.Width, fill=Species)) +
-geom_boxplot() + 
-labs(x=&quot;Species&quot;, y=&quot;Sepal Width (cm)&quot;, fill=&quot;Species&quot;, title=&quot;Iris Dataset&quot;) +
-customTheme(type=&quot;fill&quot;) 
+  geom_boxplot() + 
+  labs(x=&quot;Species&quot;, y=&quot;Sepal Width (cm)&quot;, fill=&quot;Species&quot;, title=&quot;Iris Dataset&quot;) +
+  customTheme(type=&quot;fill&quot;) 
 boxPlot</code></pre>
 <p><img src="/blog/blogCustomTheme_files/figure-html/unnamed-chunk-4-1.png" width="85%" style="display: block; margin: auto;" /></p>
 <p>A scatterplot with type=“colour”.</p>
 <pre class="r"><code>scatterPlot &lt;- ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, colour=Species)) + 
-geom_point(size=3) + 
-labs(x=&quot;Sepal Length (cm)&quot;, y=&quot;Sepal Width (cm)&quot;, colour=&quot;Species&quot;, title=&quot;Iris Dataset&quot;) +
-customTheme(type=&quot;colour&quot;) 
+  geom_point(size=3) + 
+  labs(x=&quot;Sepal Length (cm)&quot;, y=&quot;Sepal Width (cm)&quot;, colour=&quot;Species&quot;, title=&quot;Iris Dataset&quot;) +
+  customTheme(type=&quot;colour&quot;) 
 scatterPlot</code></pre>
 <p><img src="/blog/blogCustomTheme_files/figure-html/unnamed-chunk-5-1.png" width="85%" style="display: block; margin: auto;" /></p>
 <p>A histogramm with type=“fill”.</p>
 <pre class="r"><code>histo &lt;- ggplot(iris, aes(Sepal.Length, fill=Species)) + 
-geom_histogram() + 
-facet_grid(. ~ Species) +
-labs(x=&quot;Sepal Length (cm)&quot;, y=&quot;Sepal Width (cm)&quot;, fill=&quot;Species&quot;, title=&quot;Iris Dataset&quot;) +
-customTheme(type=&quot;fill&quot;) 
+  geom_histogram() + 
+  facet_grid(. ~ Species) +
+  labs(x=&quot;Sepal Length (cm)&quot;, y=&quot;Sepal Width (cm)&quot;, fill=&quot;Species&quot;, title=&quot;Iris Dataset&quot;) +
+  customTheme(type=&quot;fill&quot;) 
 histo</code></pre>
 <p><img src="/blog/blogCustomTheme_files/figure-html/unnamed-chunk-6-1.png" width="85%" style="display: block; margin: auto;" /></p>
 <p>Finally, generate some data for a plot with type=“gradient2” and try it out.</p>
@@ -173,7 +173,7 @@ histo</code></pre>
 
 scatterPlot2 &lt;- ggplot(dat, aes(x, y, colour=z)) +
   geom_point(size=3) +
-customTheme(type=&quot;gradient2&quot;) 
+  customTheme(type=&quot;gradient2&quot;) 
 scatterPlot2</code></pre>
 <p><img src="/blog/blogCustomTheme_files/figure-html/unnamed-chunk-7-1.png" width="85%" style="display: block; margin: auto;" /></p>
 <p>Just as we’ve added the type of colour scale as an argument of the custom theme function, we could also add the number of colours that are needed for a plot as an argument. Let’s adapt the initial function to include a colour argument that allows us to set the number of colours we need for each plot flexibly (“nCol”).</p>
