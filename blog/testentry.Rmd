@@ -1,16 +1,167 @@
 ---
 date: 2017-08-07T18:50:37+02:00
-title: testentry
+title: Create a custom graphics theme
 type: "post"
 author: Janina Brandes
-description: "this is the summary"
+description: "How to create an custom theme that includes adaptations of style and colour and that can be stored and loaded on demand."
 draft: false
 image: "blog/tn.png"
 ---
- This is a regular text
- 
- Add some code:
- 
-```{r}
-test <- 100 - 2 + 27
+
+Customizing ggplots by hand works fine, but can be tideous if you're doing it over and over again during a project (which I have). Therefore, creating a custom ggplot theme that includes adaptations of style and colour and that can be stored and loaded on demand has been on my to do list for a long time. This seems like a good place to start a blog... So here it comes. 
+
+Load the ggplot2 package.
+
+``` {r, warning=FALSE}
+library(ggplot2)
 ```
+
+Define custom colours. For now, lets include 3 colours, but we'll come back to this later. 
+
+``` {r, echo=TRUE}
+customColours <- c("#6d758e", "#985e6d", "#ccc2b5")
+```
+
+The basic idea is to define a custom theme and then add the colours to it in a list. I took the built-in ggplot black and white theme and adapted a few things such as title placement and text size, in addition to adding the colours. The function below requires to pass the type of colour scale as argument "type" with possible inputs "colour", "fill", or "gradient2". This way, we'll have more flexibility in using the theme for different types of plots. The different scale arguments are added by using "do.call" and passing the required arguments as a list "l".
+
+```{r, echo=TRUE}
+customTheme <- function(base_size=8, base_family="sans", type=NULL){
+  
+  # set up the colour arguments for the selected scale.
+  l <-list()
+  if (type == "fill"){
+    arg <- "scale_fill_manual"
+    l[["values"]]<-customColours
+  } 
+  if (type == "colour"){
+    arg <- "scale_colour_manual"
+    l[["values"]]<-customColours
+  }
+  if (type == "gradient2"){
+    arg <- "scale_colour_gradient2"
+    l[["low"]]<-customColours[1]
+    l[["high"]]<-customColours[2]
+    l[["na.value"]]<-"grey50"
+    l[["guide"]]<-"colourbar"
+  }
+  
+  # pass the scale arguments to the list that also holds the black/ white theme including some other style adaptations.  
+  list(theme_bw(base_size = base_size, base_family = base_family) +
+         theme(axis.text = element_text(size = 12),
+               axis.title = element_text(size = 14),
+               plot.title = element_text(size = 15, hjust=0.5, face = "bold"),
+               strip.background = element_rect(colour = "white", fill="#FFFFFF"),
+               strip.text.x = element_text(size = 14),
+               strip.text.y = element_text(size = 14),
+               legend.text = element_text(size = 12),
+               legend.title = element_text(size = 12)), 
+       do.call(arg, args=l))
+}
+```
+
+Create some test figures.
+A boxplot with type="fill".
+
+``` {r, echo=TRUE, out.width = '85%', fig.align = "center"}
+boxPlot <- ggplot(iris, aes(x=Species, y=Sepal.Width, fill=Species)) +
+geom_boxplot() + 
+labs(x="Species", y="Sepal Width (cm)", fill="Species", title="Iris Dataset") +
+customTheme(type="fill") 
+boxPlot
+```
+
+A scatterplot with type="colour".
+
+```{r, echo=TRUE, out.width = '85%', fig.align = "center"}
+scatterPlot <- ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, colour=Species)) + 
+geom_point(size=3) + 
+labs(x="Sepal Length (cm)", y="Sepal Width (cm)", colour="Species", title="Iris Dataset") +
+customTheme(type="colour") 
+scatterPlot
+```
+
+A histogramm with type="fill".
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, out.width = '85%', fig.align = "center"}
+histo <- ggplot(iris, aes(Sepal.Length, fill=Species)) + 
+geom_histogram() + 
+facet_grid(. ~ Species) +
+labs(x="Sepal Length (cm)", y="Sepal Width (cm)", fill="Species", title="Iris Dataset") +
+customTheme(type="fill") 
+histo
+``` 
+
+Finally, generate some data for a plot with type="gradient2" and try it out.
+
+```{r, echo=TRUE, out.width = '85%', fig.align = "center"}
+dat <- data.frame(
+  x = runif(100),
+  y = runif(100),
+  z = rnorm(100)
+)
+
+scatterPlot2 <- ggplot(dat, aes(x, y, colour=z)) +
+  geom_point(size=3) +
+customTheme(type="gradient2") 
+scatterPlot2
+```
+
+Just as we've added the type of colour scale as an argument of the custom theme function, we could also add the number of colours that are needed for a plot as an argument. Let's adapt the initial function to include a colour argument that allows us to set the number of colours we need for each plot flexibly ("nCol").
+
+```{r, echo=TRUE}
+customThemeCol <- function(base_size = 8, base_family = "sans", type=NULL, nCol=3){
+  
+  # Per default, nCol is set to 3. If it is specified, we generate the desired number of colours from the three basic colours we have used so far (could be any number/ any color) here.  
+  if (nCol != 3) {
+    customColours <-  colorRampPalette(c("#6d758e", "#985e6d", "#ccc2b5"), space = "Lab")(nCol)
+  } else {
+    customColours <-  c("#6d758e", "#985e6d", "#ccc2b5")
+  }
+  
+  # set up the other arguments for the selected scale.
+  l <-list()
+  if (type == "fill"){
+    arg <- "scale_fill_manual"
+    l[["values"]]<-customColours
+  } 
+  if (type == "colour"){
+    arg <- "scale_colour_manual"
+    l[["values"]]<-customColours
+  }
+  if (type == "gradient2"){
+    arg <- "scale_colour_gradient2"
+    l[["low"]]<-customColours[1]
+    l[["high"]]<-customColours[2]
+    l[["na.value"]]<-"grey50"
+    l[["guide"]]<-"colourbar"
+  }
+  
+  # pass the scale arguments to the list that also holds the black/ white theme including some other style adaptations.  
+  list(theme_bw(base_size = base_size, base_family = base_family) +
+         theme(axis.text = element_text(size = 12),
+               axis.title = element_text(size = 14),
+               plot.title = element_text(size = 15, hjust=0.5, face = "bold"),
+               strip.background = element_rect(colour = "white", fill="#FFFFFF"),
+               strip.text.x = element_text(size = 14),
+               strip.text.y = element_text(size = 14),
+               legend.text = element_text(size = 12),
+               legend.title = element_text(size = 12)), 
+       do.call(arg, args=l))
+}
+```
+
+Generate some data with 10 factor levels ("nFLev") and plot it using 10 different colours implemented in the new theme function.
+
+```{r, echo=TRUE, out.width = '85%', fig.align = "center"}
+nFLev <- 10
+dat <- data.frame(x=runif(1000), y=runif(1000), z=rep(letters[1:nFLev], 100))
+
+scatterPlot3 <- ggplot(dat, aes(x, y, colour=z)) + 
+  geom_point(size=3) +
+  customThemeCol(type="colour", nCol=nFLev) 
+scatterPlot3
+```
+
+
+
+That's it! 
