@@ -7,6 +7,7 @@ description: "How to create an custom theme that includes adaptations of style a
 draft: false
 image: "blog/tm.jpg"
 showonlyimage: false
+tags: ["R", "visualization", "colour", "ggplot"]
 ---
 
 <img src="/blog/tm.jpg" width="500">
