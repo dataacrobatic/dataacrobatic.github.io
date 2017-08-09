@@ -3,7 +3,7 @@ date: 2017-08-07T18:50:37+02:00
 title: Create a custom graphics theme
 type: "post"
 author: Janina Brandes
-description: "How to create an custom theme that includes adaptations of style/colour and that can be stored and loaded on demand."
+description: "How to create an custom theme that includes adaptations of style and colour."
 draft: false
 image: "blog/tn.png"
 ---
