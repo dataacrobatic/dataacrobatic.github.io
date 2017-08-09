@@ -115,7 +115,7 @@
     <item>
       <title>Create a custom graphics theme</title>
       <link>/blog/blogcustomtheme/</link>
-      <pubDate>Mon, 07 Aug 2017 18:50:37 +0200</pubDate>
+      <pubDate>Wed, 09 Aug 2017 18:50:37 +0200</pubDate>
       
       <guid>/blog/blogcustomtheme/</guid>
       <description>Customizing ggplots by hand works fine, but can be tideous if you’re doing it over and over again during a project (which I have). Therefore, creating a custom ggplot theme that includes adaptations of style/ colour and that can be stored and loaded on demand has been on my to do list for a while. This seems like a good place to start a blog… So here it comes.

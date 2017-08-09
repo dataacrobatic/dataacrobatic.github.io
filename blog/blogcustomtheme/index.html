@@ -104,7 +104,8 @@
     <div class="col-lg-8">
       <div class="content-column-content">
          <h1>Create a custom graphics theme</h1>
-         <p>Customizing ggplots by hand works fine, but can be tideous if you’re doing it over and over again during a project (which I have). Therefore, creating a custom ggplot theme that includes adaptations of style/ colour and that can be stored and loaded on demand has been on my to do list for a while. This seems like a good place to start a blog… So here it comes.</p>
+         <p><img src="/blog/tm.jpg" width="500"></p>
+<p>Customizing ggplots by hand works fine, but can be tideous if you’re doing it over and over again during a project (which I have). Therefore, creating a custom ggplot theme that includes adaptations of style/ colour and that can be stored and loaded on demand has been on my to do list for a while. This seems like a good place to start a blog… So here it comes.</p>
 <p>Preparations: load the ggplot2 package.</p>
 <pre class="r"><code>library(ggplot2)</code></pre>
 <p>Define custom colours. For now, lets include 3 colours, but we’ll come back to this later.</p>
@@ -225,7 +226,11 @@ scatterPlot3 &lt;- ggplot(dat, aes(x, y, colour=z)) +
   customThemeCol(type=&quot;colour&quot;, nCol=nFLev) 
 scatterPlot3</code></pre>
 <p><img src="/blog/blogCustomTheme_files/figure-html/unnamed-chunk-9-1.png" width="85%" style="display: block; margin: auto;" /></p>
-<p>That’s it! I usually have a script with “utility functions” that I call when starting a project to which I’ll just add this theme function for custom visualizations.</p>
+<p>That’s it! I usually have a script with “utility functions” that I call when starting a project to which I’ll just add this theme function for custom visualizations. Last but not least: check out this website for colour inspiration. It let’s you upload an image and outputs the colour codes in it. Try it out with screenshots of websites, plots, photos you like - pretty neat, right?</p>
+<ul>
+<li><a href="http://www.geotests.net/couleurs/frequences_en.html" class="uri">http://www.geotests.net/couleurs/frequences_en.html</a></li>
+</ul>
+<p><img src="/blog/tm1.png" width="500"></p>
 
          
       </div>

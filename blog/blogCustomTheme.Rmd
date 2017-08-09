@@ -1,12 +1,14 @@
 ---
-date: 2017-08-07T18:50:37+02:00
+date: 2017-08-09T18:50:37+02:00
 title: Create a custom graphics theme
 type: "post"
 author: Janina Brandes
 description: "How to create an custom theme that includes adaptations of style and colour."
 draft: false
-image: "blog/tn.png"
+image: "blog/tm.jpg"
 ---
+
+<img src="/blog/tm.jpg" width="500">
 
 Customizing ggplots by hand works fine, but can be tideous if you're doing it over and over again during a project (which I have). Therefore, creating a custom ggplot theme that includes adaptations of style/ colour and that can be stored and loaded on demand has been on my to do list for a while. This seems like a good place to start a blog... So here it comes. 
 
@@ -163,4 +165,8 @@ scatterPlot3
 ```
 
 
-That's it! I usually have a script with "utility functions" that I call when starting a project to which I'll just add this theme function for custom visualizations.
+That's it! I usually have a script with "utility functions" that I call when starting a project to which I'll just add this theme function for custom visualizations. Last but not least: check out this website for colour inspiration. It let's you upload an image and outputs the colour codes in it. Try it out with screenshots of websites, plots, photos you like - pretty neat, right? 
+
+* http://www.geotests.net/couleurs/frequences_en.html
+
+<img src="/blog/tm1.png" width="500">
