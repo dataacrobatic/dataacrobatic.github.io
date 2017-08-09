@@ -104,12 +104,12 @@
     <div class="col-lg-8">
       <div class="content-column-content">
          <h1>Create a custom graphics theme</h1>
-         <p>Customizing ggplots by hand works fine, but can be tideous if you’re doing it over and over again during a project (which I have). Therefore, creating a custom ggplot theme that includes adaptations of style and colour and that can be stored and loaded on demand has been on my to do list for a long time. This seems like a good place to start a blog… So here it comes.</p>
-<p>Load the ggplot2 package.</p>
+         <p>Customizing ggplots by hand works fine, but can be tideous if you’re doing it over and over again during a project (which I have). Therefore, creating a custom ggplot theme that includes adaptations of style/ colour and that can be stored and loaded on demand has been on my to do list for a while. This seems like a good place to start a blog… So here it comes.</p>
+<p>Preparations: load the ggplot2 package.</p>
 <pre class="r"><code>library(ggplot2)</code></pre>
 <p>Define custom colours. For now, lets include 3 colours, but we’ll come back to this later.</p>
 <pre class="r"><code>customColours &lt;- c(&quot;#6d758e&quot;, &quot;#985e6d&quot;, &quot;#ccc2b5&quot;)</code></pre>
-<p>The basic idea is to define a custom theme and then add the colours to it in a list. I took the built-in ggplot black and white theme and adapted a few things such as title placement and text size, in addition to adding the colours. The function below requires to pass the type of colour scale as argument “type” with possible inputs “colour”, “fill”, or “gradient2”. This way, we’ll have more flexibility in using the theme for different types of plots. The different scale arguments are added by using “do.call” and passing the required arguments as a list “l”.</p>
+<p>The basic idea is to define a custom theme and then add the colours to it in a list. I took the built-in ggplot black and white theme (“theme_bw”) and adapted a few things such as title placement, text size, and facet look in addition to adding the colours. The function below requires to pass the type of colour scale as argument “type” with possible inputs “colour”, “fill”, or “gradient2”. This way, we’ll have more flexibility in using the theme for different types of plots. The different scale arguments are added by using “do.call” and passing the required arguments as a list “l”.</p>
 <pre class="r"><code>customTheme &lt;- function(base_size=8, base_family=&quot;sans&quot;, type=NULL){
   
   # set up the colour arguments for the selected scale.
@@ -130,7 +130,7 @@
     l[[&quot;guide&quot;]]&lt;-&quot;colourbar&quot;
   }
   
-  # pass the scale arguments to the list that also holds the black/ white theme including some other style adaptations.  
+  # pass the scale arguments to the list that holds the adapted black/ white theme.  
   list(theme_bw(base_size = base_size, base_family = base_family) +
          theme(axis.text = element_text(size = 12),
                axis.title = element_text(size = 14),
@@ -142,21 +142,21 @@
                legend.title = element_text(size = 12)), 
        do.call(arg, args=l))
 }</code></pre>
-<p>Create some test figures. A boxplot with type=“fill”.</p>
+<p>Create some test figures. Try a boxplot with type=“fill” of the iris data.</p>
 <pre class="r"><code>boxPlot &lt;- ggplot(iris, aes(x=Species, y=Sepal.Width, fill=Species)) +
   geom_boxplot() + 
   labs(x=&quot;Species&quot;, y=&quot;Sepal Width (cm)&quot;, fill=&quot;Species&quot;, title=&quot;Iris Dataset&quot;) +
   customTheme(type=&quot;fill&quot;) 
 boxPlot</code></pre>
 <p><img src="/blog/blogCustomTheme_files/figure-html/unnamed-chunk-4-1.png" width="85%" style="display: block; margin: auto;" /></p>
-<p>A scatterplot with type=“colour”.</p>
+<p>Now, try a scatterplot with type=“colour”.</p>
 <pre class="r"><code>scatterPlot &lt;- ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, colour=Species)) + 
   geom_point(size=3) + 
   labs(x=&quot;Sepal Length (cm)&quot;, y=&quot;Sepal Width (cm)&quot;, colour=&quot;Species&quot;, title=&quot;Iris Dataset&quot;) +
   customTheme(type=&quot;colour&quot;) 
 scatterPlot</code></pre>
 <p><img src="/blog/blogCustomTheme_files/figure-html/unnamed-chunk-5-1.png" width="85%" style="display: block; margin: auto;" /></p>
-<p>A histogramm with type=“fill”.</p>
+<p>Let’s try a histogramm with type=“fill” and facets to check out whether the adaptations of facet style look as planned (white instead of default grey background).</p>
 <pre class="r"><code>histo &lt;- ggplot(iris, aes(Sepal.Length, fill=Species)) + 
   geom_histogram() + 
   facet_grid(. ~ Species) +
@@ -164,7 +164,7 @@ scatterPlot</code></pre>
   customTheme(type=&quot;fill&quot;) 
 histo</code></pre>
 <p><img src="/blog/blogCustomTheme_files/figure-html/unnamed-chunk-6-1.png" width="85%" style="display: block; margin: auto;" /></p>
-<p>Finally, generate some data for a plot with type=“gradient2” and try it out.</p>
+<p>We also implemented a gradient color scale in our custom theme. Let’s generate some data and try it out.</p>
 <pre class="r"><code>dat &lt;- data.frame(
   x = runif(100),
   y = runif(100),
@@ -176,10 +176,10 @@ scatterPlot2 &lt;- ggplot(dat, aes(x, y, colour=z)) +
   customTheme(type=&quot;gradient2&quot;) 
 scatterPlot2</code></pre>
 <p><img src="/blog/blogCustomTheme_files/figure-html/unnamed-chunk-7-1.png" width="85%" style="display: block; margin: auto;" /></p>
-<p>Just as we’ve added the type of colour scale as an argument of the custom theme function, we could also add the number of colours that are needed for a plot as an argument. Let’s adapt the initial function to include a colour argument that allows us to set the number of colours we need for each plot flexibly (“nCol”).</p>
+<p>Finally, just as we’ve added the type of colour scale as an argument of the custom theme function, we can also add the number of colours that are needed for a plot as an argument. This is useful because you’ll probably draw plots that differ in the number of colours throughout a project. Thus, let’s adapt the initial function to include an argument that allows us to set the number of colours we need for each plot flexibly (“nCol”). We’ll set it to 3 per default for now. If it is specified when calling the function, we’ll generate the desired number of colours from the three basic colours we have used so far.</p>
 <pre class="r"><code>customThemeCol &lt;- function(base_size = 8, base_family = &quot;sans&quot;, type=NULL, nCol=3){
   
-  # Per default, nCol is set to 3. If it is specified, we generate the desired number of colours from the three basic colours we have used so far (could be any number/ any color) here.  
+  # set up the number of colours here.  
   if (nCol != 3) {
     customColours &lt;-  colorRampPalette(c(&quot;#6d758e&quot;, &quot;#985e6d&quot;, &quot;#ccc2b5&quot;), space = &quot;Lab&quot;)(nCol)
   } else {
@@ -204,7 +204,7 @@ scatterPlot2</code></pre>
     l[[&quot;guide&quot;]]&lt;-&quot;colourbar&quot;
   }
   
-  # pass the scale arguments to the list that also holds the black/ white theme including some other style adaptations.  
+  # pass the scale arguments to the list that holds the adapted black/ white theme.    
   list(theme_bw(base_size = base_size, base_family = base_family) +
          theme(axis.text = element_text(size = 12),
                axis.title = element_text(size = 14),
@@ -216,7 +216,7 @@ scatterPlot2</code></pre>
                legend.title = element_text(size = 12)), 
        do.call(arg, args=l))
 }</code></pre>
-<p>Generate some data with 10 factor levels (“nFLev”) and plot it using 10 different colours implemented in the new theme function.</p>
+<p>Done. Let’s test whether it works. Generate some data with 10 factor levels (“nFLev”) and plot it using 10 different colours as implemented in the new theme function.</p>
 <pre class="r"><code>nFLev &lt;- 10
 dat &lt;- data.frame(x=runif(1000), y=runif(1000), z=rep(letters[1:nFLev], 100))
 
@@ -225,7 +225,7 @@ scatterPlot3 &lt;- ggplot(dat, aes(x, y, colour=z)) +
   customThemeCol(type=&quot;colour&quot;, nCol=nFLev) 
 scatterPlot3</code></pre>
 <p><img src="/blog/blogCustomTheme_files/figure-html/unnamed-chunk-9-1.png" width="85%" style="display: block; margin: auto;" /></p>
-<p>That’s it!</p>
+<p>That’s it! I usually have a script with “utility functions” that I call when starting a project to which I’ll just add this theme function for custom visualizations.</p>
 
          
       </div>

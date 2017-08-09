@@ -3,14 +3,14 @@ date: 2017-08-07T18:50:37+02:00
 title: Create a custom graphics theme
 type: "post"
 author: Janina Brandes
-description: "How to create an custom theme that includes adaptations of style and colour and that can be stored and loaded on demand."
+description: "How to create an custom theme that includes adaptations of style/colour and that can be stored and loaded on demand."
 draft: false
 image: "blog/tn.png"
 ---
 
-Customizing ggplots by hand works fine, but can be tideous if you're doing it over and over again during a project (which I have). Therefore, creating a custom ggplot theme that includes adaptations of style and colour and that can be stored and loaded on demand has been on my to do list for a long time. This seems like a good place to start a blog... So here it comes. 
+Customizing ggplots by hand works fine, but can be tideous if you're doing it over and over again during a project (which I have). Therefore, creating a custom ggplot theme that includes adaptations of style/ colour and that can be stored and loaded on demand has been on my to do list for a while. This seems like a good place to start a blog... So here it comes. 
 
-Load the ggplot2 package.
+Preparations: load the ggplot2 package.
 
 ``` {r, warning=FALSE}
 library(ggplot2)
@@ -22,7 +22,7 @@ Define custom colours. For now, lets include 3 colours, but we'll come back to t
 customColours <- c("#6d758e", "#985e6d", "#ccc2b5")
 ```
 
-The basic idea is to define a custom theme and then add the colours to it in a list. I took the built-in ggplot black and white theme and adapted a few things such as title placement and text size, in addition to adding the colours. The function below requires to pass the type of colour scale as argument "type" with possible inputs "colour", "fill", or "gradient2". This way, we'll have more flexibility in using the theme for different types of plots. The different scale arguments are added by using "do.call" and passing the required arguments as a list "l".
+The basic idea is to define a custom theme and then add the colours to it in a list. I took the built-in ggplot black and white theme ("theme_bw") and adapted a few things such as title placement, text size, and facet look in addition to adding the colours. The function below requires to pass the type of colour scale as argument "type" with possible inputs "colour", "fill", or "gradient2". This way, we'll have more flexibility in using the theme for different types of plots. The different scale arguments are added by using "do.call" and passing the required arguments as a list "l".
 
 ```{r, echo=TRUE}
 customTheme <- function(base_size=8, base_family="sans", type=NULL){
@@ -45,7 +45,7 @@ customTheme <- function(base_size=8, base_family="sans", type=NULL){
     l[["guide"]]<-"colourbar"
   }
   
-  # pass the scale arguments to the list that also holds the black/ white theme including some other style adaptations.  
+  # pass the scale arguments to the list that holds the adapted black/ white theme.  
   list(theme_bw(base_size = base_size, base_family = base_family) +
          theme(axis.text = element_text(size = 12),
                axis.title = element_text(size = 14),
@@ -60,7 +60,7 @@ customTheme <- function(base_size=8, base_family="sans", type=NULL){
 ```
 
 Create some test figures.
-A boxplot with type="fill".
+Try a boxplot with type="fill" of the iris data.
 
 ``` {r, echo=TRUE, out.width = '85%', fig.align = "center"}
 boxPlot <- ggplot(iris, aes(x=Species, y=Sepal.Width, fill=Species)) +
@@ -70,7 +70,7 @@ boxPlot <- ggplot(iris, aes(x=Species, y=Sepal.Width, fill=Species)) +
 boxPlot
 ```
 
-A scatterplot with type="colour".
+Now, try a scatterplot with type="colour".
 
 ```{r, echo=TRUE, out.width = '85%', fig.align = "center"}
 scatterPlot <- ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, colour=Species)) + 
@@ -80,7 +80,7 @@ scatterPlot <- ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, colour=Species)) 
 scatterPlot
 ```
 
-A histogramm with type="fill".
+Let's try a histogramm with type="fill" and facets to check out whether the adaptations of facet style look as planned (white instead of default grey background).
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, out.width = '85%', fig.align = "center"}
 histo <- ggplot(iris, aes(Sepal.Length, fill=Species)) + 
@@ -91,7 +91,7 @@ histo <- ggplot(iris, aes(Sepal.Length, fill=Species)) +
 histo
 ``` 
 
-Finally, generate some data for a plot with type="gradient2" and try it out.
+We also implemented a gradient color scale in our custom theme. Let's generate some data and try it out.
 
 ```{r, echo=TRUE, out.width = '85%', fig.align = "center"}
 dat <- data.frame(
@@ -106,12 +106,12 @@ scatterPlot2 <- ggplot(dat, aes(x, y, colour=z)) +
 scatterPlot2
 ```
 
-Just as we've added the type of colour scale as an argument of the custom theme function, we could also add the number of colours that are needed for a plot as an argument. Let's adapt the initial function to include a colour argument that allows us to set the number of colours we need for each plot flexibly ("nCol").
+Finally, just as we've added the type of colour scale as an argument of the custom theme function, we can also add the number of colours that are needed for a plot as an argument. This is useful because you'll probably draw plots that differ in the number of colours throughout a project. Thus, let's adapt the initial function to include an argument that allows us to set the number of colours we need for each plot flexibly ("nCol"). We'll set it to 3 per default for now. If it is specified when calling the function, we'll generate the desired number of colours from the three basic colours we have used so far.
 
 ```{r, echo=TRUE}
 customThemeCol <- function(base_size = 8, base_family = "sans", type=NULL, nCol=3){
   
-  # Per default, nCol is set to 3. If it is specified, we generate the desired number of colours from the three basic colours we have used so far (could be any number/ any color) here.  
+  # set up the number of colours here.  
   if (nCol != 3) {
     customColours <-  colorRampPalette(c("#6d758e", "#985e6d", "#ccc2b5"), space = "Lab")(nCol)
   } else {
@@ -136,7 +136,7 @@ customThemeCol <- function(base_size = 8, base_family = "sans", type=NULL, nCol=
     l[["guide"]]<-"colourbar"
   }
   
-  # pass the scale arguments to the list that also holds the black/ white theme including some other style adaptations.  
+  # pass the scale arguments to the list that holds the adapted black/ white theme.    
   list(theme_bw(base_size = base_size, base_family = base_family) +
          theme(axis.text = element_text(size = 12),
                axis.title = element_text(size = 14),
@@ -150,7 +150,7 @@ customThemeCol <- function(base_size = 8, base_family = "sans", type=NULL, nCol=
 }
 ```
 
-Generate some data with 10 factor levels ("nFLev") and plot it using 10 different colours implemented in the new theme function.
+Done. Let's test whether it works. Generate some data with 10 factor levels ("nFLev") and plot it using 10 different colours as implemented in the new theme function.
 
 ```{r, echo=TRUE, out.width = '85%', fig.align = "center"}
 nFLev <- 10
@@ -163,5 +163,4 @@ scatterPlot3
 ```
 
 
-
-That's it! 
+That's it! I usually have a script with "utility functions" that I call when starting a project to which I'll just add this theme function for custom visualizations.
