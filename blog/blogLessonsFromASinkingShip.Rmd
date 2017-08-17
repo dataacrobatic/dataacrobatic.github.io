@@ -12,7 +12,7 @@ tags: ["R", "random forest", "decision tree", "generalized linear model"]
 
 <img src="/blog/ship.jpg" width="500">
 
-During my first blogged dataacrobatics, I'd like to play with the Titanic data from Kaggle. My goal is to explore the data, engineer some basic features, build a few basic models, and compare their fit. Thus, my aim is to get a pipeline running and skip tweaking details for now.
+Let's play with the Titanic data from Kaggle. In this first (blogged) data project, my goals are to explore the data, engineer some basic features, build a few basic models, and compare their fit. Thus, my overall aim is to get a pipeline running and skip tweaking details (fine-tuning models and features) for now.
 
 Preparations: clear workspace, detach packages, prepare custom plotting theme.
 ``` {r, warning=FALSE}
@@ -421,7 +421,7 @@ dotPlotAcc <- ggplot(accOut, aes(Model, Median, colour=Model)) +
   coord_flip() +
   customThemeCol(type = "colour", nCol=length(levels(accOut$Model))) +
   theme(legend.position="none") +
-  labs(x="Model (Median/ 95% CI)", y="Accuracy", title=paste("Model Fit: accuracy", sep="")) 
+  labs(x="Model", y="Accuracy  (Median/ 95% CI)", title=paste("Model Fit: accuracy", sep="")) 
 
 dotPlotKappa <- ggplot(kappaOut, aes(Model, Median, colour=Model)) +
   geom_point(size = 3) +
@@ -429,11 +429,11 @@ dotPlotKappa <- ggplot(kappaOut, aes(Model, Median, colour=Model)) +
   coord_flip() +
   customThemeCol(type = "colour", nCol=length(levels(kappaOut$Model))) +
   theme(legend.position="none") +
-  labs(x="Model (Median/ 95% CI)", y="Kappa", title=paste("Model Fit: kappa", sep="")) 
+  labs(x="Model", y="Kappa (Median/ 95% CI)", title=paste("Model Fit: kappa", sep="")) 
 
 grid.arrange(dotPlotAcc, dotPlotKappa, ncol = 2)
 ```
 
-I'd probably go for a model that has a good combination of a high median and small confidence interval and try to boost accuracy by engineering some more features.
+I'd probably go for a model that has a good combination of a high median and small confidence interval and try to boost accuracy by engineering some more features. It doesn't look like adding the imputed "Deck" information helps much.
 
 To wrap up, there are many lessons that can be learned from a sinking ship. Traveling in small groups, being young and female seems to boost your chance at survival (at least it did so for the passengers of the Titanic back in the day). There's much more feature engineering that could be done to boost accuracy. For example, when we checked out the missing cases for the predictor "Embarked" we saw that two women had the same ticket number, but no family relation ("Parch" and "Sibsp"). Other than families, groups of friends or colleagues probably travelled together as well. Ticket number seems to be an indication of such other travel groups, which could additionally help to predict "Survival". Also, the predictor "Names" might include information of ethnicity or socioeconomic status (e.g., titles), which could further improve the model. Moreover, for now, I set up some basic models, but those could obviously be tuned as well (my goal here was to get a pipeline to work first). Well, that was fun! Be back soon.
