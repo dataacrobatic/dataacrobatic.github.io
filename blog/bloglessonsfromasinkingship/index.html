@@ -218,8 +218,8 @@ histoAgeSur &lt;- ggplot(dat[dat$set == &quot;train&quot;,], aes(Age, fill=Survi
   labs(x=&quot;Age&quot;, y=&quot;Count&quot;, colours=&quot;Survived&quot;, title=&quot;Survival by age&quot;)   
 histoAgeSur</code></pre>
 <p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
-<p>It looks like middle-aged people were less likely to survive that young or old ones and this relationship seems to depend on Sex.</p>
-<p>Lets engineer some additional features. First, calculate family size from “SibSp” (= n siblings/ spouses aboard) and “Parch” (= n parents/ children aboard), including the passenger him-/herself.</p>
+<p>It looks like middle-aged people were less likely to survive that young or old ones and this relationship seemed to depend on gender.</p>
+<p>Let’s engineer some additional features. First, calculate family size from “SibSp” (= n siblings/ spouses aboard) and “Parch” (= n parents/ children aboard), including the passenger him-/herself.</p>
 <pre class="r"><code>dat$fSiz &lt;- as.factor(dat$SibSp + dat$Parch + 1)
 
 barPlotfSiz &lt;- ggplot(dat[dat$set == &quot;train&quot;,], aes(fSiz, fill=Survived)) + 
@@ -255,8 +255,8 @@ barPlotDeck &lt;- ggplot(dat[dat$set == &quot;train&quot;,], aes(Deck, fill=Surv
   labs(x=&quot;Deck&quot;, y=&quot;Count&quot;, colours=&quot;Survived&quot;, title=&quot;Survival by deck&quot;)   
 barPlotDeck</code></pre>
 <p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
-<p>Might be relevant, but it seems like there’re a lot of missings.</p>
-<p>Let’s deal with that next. First, let’s set empty strings to NA in the “Embarked” column. Let’s skip the “Names”, “Ticket” and “Cabin” columns for now.</p>
+<p>Might be relevant, but there’re a lot of missing values.</p>
+<p>Let’s deal with those next. First, let’s set empty strings to NA in the “Embarked” column. Let’s skip the “Names”, “Ticket” and “Cabin” columns for now.</p>
 <pre class="r"><code>dat$Embarked[dat$Embarked == &quot;&quot;] &lt;- NA
 index &lt;- dat[(which(is.na(dat$Embarked))),1]
 dat[(which(is.na(dat$Embarked))),]</code></pre>
@@ -266,7 +266,7 @@ dat[(which(is.na(dat$Embarked))),]</code></pre>
 ##        Sex Age SibSp Parch Ticket Fare Cabin Embarked   set fSiz Deck
 ## 62  female  38     0     0 113572   80   B28     &lt;NA&gt; train    1    B
 ## 830 female  62     0     0 113572   80   B28     &lt;NA&gt; train    1    B</code></pre>
-<p>Two people are missing the “Embarked” column. Let’s look at where others with the same ticket class (“1”) embarked and how much they paid (“Fare”). Then, fill the NAs with the most likely value (similar price and the same ticket class; here: “C”).</p>
+<p>Two people are missing the port were they embarked the ship. Let’s look at where others with the same ticket class (“1”) embarked and how much they paid (“Fare”). Then, fill the NAs with the most likely value (similar price and the same ticket class; here: “C”).</p>
 <pre class="r"><code>dat %&gt;%
   group_by(Embarked, Pclass) %&gt;%
   filter(Pclass == &quot;1&quot;) %&gt;%
@@ -280,7 +280,7 @@ dat[(which(is.na(dat$Embarked))),]</code></pre>
 ## 3        S      1    52.0000   177
 ## 4       NA      1    80.0000     2</code></pre>
 <pre class="r"><code>dat$Embarked[index] &lt;- &quot;C&quot;</code></pre>
-<p>Let’s have a look at the missings of the whole data set.</p>
+<p>Let’s have a look at the missing values in the whole data set.</p>
 <pre class="r"><code>missingsPlot &lt;- aggr(dat, col=c(&quot;#6d758e&quot;, &quot;#985e6d&quot;), numbers=TRUE, 
                   sortVars=TRUE, labels=names(dat), cex.axis=.7, gap=3, combined= T,
                   ylab=c(&quot;Missing data&quot;,&quot;Pattern&quot;)) </code></pre>
@@ -306,7 +306,7 @@ dat[(which(is.na(dat$Embarked))),]</code></pre>
 <p>Ok, we’re missing some decks, ages, and survivals. Check out whether the missings in the “Survival” column correspond to the size of the test data.</p>
 <pre class="r"><code>sum(is.na(dat$Survived)) == dim(titanic_test)[1]</code></pre>
 <pre><code>## [1] TRUE</code></pre>
-<p>Yes, they do. We can ignore those. There is a different number of “Cabin” and “Deck” missings, this is because we recoded empty strings in the “Cabin” column as NA in the “Deck” column. Lets make sure that indeed all “Deck” NAs are empty strings in the “Cabin” column.</p>
+<p>Yes, they do. We can ignore those. There’s a different number of “Cabin” and “Deck” missing values, this is because we recoded empty strings in the “Cabin” column as NA in the “Deck” column. Let’s make sure that indeed all “Deck” NAs are empty strings in the “Cabin” column.</p>
 <pre class="r"><code>unique(dat$Cabin[is.na(dat$Deck)])</code></pre>
 <pre><code>## [1] &quot;&quot;</code></pre>
 <p>Ok, looks good. The output from the plot shows that there’s just one missing “Fare” value. Let’s look at the details of this passenger.</p>
@@ -441,7 +441,7 @@ rf1 &lt;- train(getFeat(trainN), trainN$Survived, method = &quot;ranger&quot;,
 glm1 &lt;- train(Survived ~ Pclass + Age + Sex + fSiz + Fare + Embarked,
              method = &quot;glmnet&quot;, data = trainN, trControl = control, tuneLength=15)
 
-dt1 &lt;- train(getFeatFull(trainN), trainN$Survived, method = &quot;rpart&quot;,
+dt1 &lt;- train(getFeat(trainN), trainN$Survived, method = &quot;rpart&quot;,
             trControl = control, tuneLength=15)</code></pre>
 <p>Plot the contribution of each predictor and compare models.</p>
 <pre class="r"><code># function to plot variable importance.
@@ -459,14 +459,14 @@ plotImp &lt;- function(caretModel, modelName) {
 }
 
 # plot predictor importance for the full models.
-a &lt;- plotImp(rf, modelName = &quot;random forest&quot;)
-b &lt;- plotImp(glm, modelName = &quot;logistic regression&quot;)
-c &lt;- plotImp(dt, modelName = &quot;decision tree&quot;)
-
-grid.arrange(a, b, c, nrow = 3)</code></pre>
+plotImp(rf, modelName = &quot;random forest&quot;)</code></pre>
 <p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-31-1.png" width="672" /></p>
-<p>Looks like there’s some differences in how the predictors are weighted. Note that we get the importance of each factor level from the logistic regression. But, consistent with the impression from the raw data, “Sex”, “Age” and “Family Size” seem to be relevant predictors for “Survival”.</p>
-<p>But which model fits best? For that, we’ll look at two parameters. Accuracy, that is, if we generate new data using our model, how well can we predict the Survival in the new data? Accuracy can be biased if classes are not perfectly balanced. To be on the safe side, we’ll also look at Kappa, as it also takes into account the expected error rate.</p>
+<pre class="r"><code>plotImp(glm, modelName = &quot;logistic regression&quot;)</code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-31-2.png" width="672" /></p>
+<pre class="r"><code>plotImp(dt, modelName = &quot;decision tree&quot;)</code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-31-3.png" width="672" /></p>
+<p>Looks like there’s some differences in how the predictors are weighted. Note that we get the importance of each factor level from the logistic regression. But, consistent with the impression from the raw data, “Sex”, “Age” and “Family Size” seem to be relevant predictors for “Survival”, but others contribute as well (e.g., “Fare”).</p>
+<p>But which model fits best? For that, we’ll look at two parameters. Accuracy, that is, if we generate new data using our model, how well can we predict the Survival in the new data? Accuracy can be biased if classes are not perfectly balanced. To be on the safe side, we’ll also look at Kappa, as it also takes into account the expected error rate. They end up looking pretty much the same, so we’re fine.</p>
 <pre class="r"><code># preparations: create a list of models
 models &lt;- list(rf = rf, glm = glm, dt = dt, rf1 = rf1, glm1 = glm1, dt1 = dt1)
 
@@ -501,7 +501,7 @@ dotPlotKappa &lt;- ggplot(kappaOut, aes(Model, Median, colour=Model)) +
 grid.arrange(dotPlotAcc, dotPlotKappa, ncol = 2)</code></pre>
 <p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-32-1.png" width="672" /></p>
 <p>I’d probably go for a model that has a good combination of a high median and small confidence interval and try to boost accuracy by engineering some more features.</p>
-<p>To wrap up, there are many lessons that can be learned from a sinking ship. Travel in small groups, being young and female seems to boost your chance at survival (at least it did so for the passengers of the Titanic back in the day). There’s much more feature engineering that could be done to boost accuracy. For example, when we checked out the missing cases for the predictor “Embarked” we saw that two women had the same ticket number, but no family relation (“Parch” and “Sibsp”). Other than families, groups of friends or colleagues probably travelled together as well. Ticket number seems to be an indication of such other travel groups, which could additionally help to predict “Survival”. Also, the predictor “Names” might include information of ethnicity or socioeconomic status (e.g., titles), which could further improve the model. Moreover, for now, I set up some basic models, but those could obviously be tuned as well (my goal here was to get a pipeline to work first). Well, that was fun! Be back soon.</p>
+<p>To wrap up, there are many lessons that can be learned from a sinking ship. Traveling in small groups, being young and female seems to boost your chance at survival (at least it did so for the passengers of the Titanic back in the day). There’s much more feature engineering that could be done to boost accuracy. For example, when we checked out the missing cases for the predictor “Embarked” we saw that two women had the same ticket number, but no family relation (“Parch” and “Sibsp”). Other than families, groups of friends or colleagues probably travelled together as well. Ticket number seems to be an indication of such other travel groups, which could additionally help to predict “Survival”. Also, the predictor “Names” might include information of ethnicity or socioeconomic status (e.g., titles), which could further improve the model. Moreover, for now, I set up some basic models, but those could obviously be tuned as well (my goal here was to get a pipeline to work first). Well, that was fun! Be back soon.</p>
 
          
       </div>

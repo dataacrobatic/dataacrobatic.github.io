@@ -144,9 +144,9 @@ histoAgeSur <- ggplot(dat[dat$set == "train",], aes(Age, fill=Survived)) +
 histoAgeSur
 ```
 
-It looks like middle-aged people were less likely to survive that young or old ones and this relationship seems to depend on Sex. 
+It looks like middle-aged people were less likely to survive that young or old ones and this relationship seemed to depend on gender. 
 
-Lets engineer some additional features.
+Let's engineer some additional features.
 First, calculate family size from "SibSp" (= n siblings/ spouses aboard) and "Parch" (= n parents/ children aboard), including the passenger him-/herself.
 ```{r, warning=FALSE, results='hide',fig.keep='all'}
 dat$fSiz <- as.factor(dat$SibSp + dat$Parch + 1)
@@ -189,9 +189,9 @@ barPlotDeck <- ggplot(dat[dat$set == "train",], aes(Deck, fill=Survived)) +
 barPlotDeck
 ```
 
-Might be relevant, but it seems like there're a lot of missings.
+Might be relevant, but there're a lot of missing values.
 
-Let's deal with that next.
+Let's deal with those next.
 First, let's set empty strings to NA in the "Embarked" column. Let's skip the "Names", "Ticket" and "Cabin" columns for now.
 ```{r, warning=FALSE}
 dat$Embarked[dat$Embarked == ""] <- NA
@@ -199,7 +199,7 @@ index <- dat[(which(is.na(dat$Embarked))),1]
 dat[(which(is.na(dat$Embarked))),]
 ```
 
-Two people are missing the "Embarked" column. Let's look at where others with the same ticket class ("1") embarked and how much they paid ("Fare"). Then, fill the NAs with the most likely value (similar price and the same ticket class; here: "C").
+Two people are missing the port were they embarked the ship. Let's look at where others with the same ticket class ("1") embarked and how much they paid ("Fare"). Then, fill the NAs with the most likely value (similar price and the same ticket class; here: "C").
 ```{r, warning=FALSE}
 dat %>%
   group_by(Embarked, Pclass) %>%
@@ -208,7 +208,7 @@ dat %>%
 dat$Embarked[index] <- "C"
 ```
 
-Let's have a look at the missings of the whole data set.
+Let's have a look at the missing values in the whole data set.
 ```{r, warning=FALSE}
 missingsPlot <- aggr(dat, col=c("#6d758e", "#985e6d"), numbers=TRUE, 
                   sortVars=TRUE, labels=names(dat), cex.axis=.7, gap=3, combined= T,
@@ -222,7 +222,7 @@ sum(is.na(dat$Survived)) == dim(titanic_test)[1]
 ```
 
 Yes, they do. We can ignore those.
-There is a different number of "Cabin" and "Deck" missings, this is because we recoded empty strings in the "Cabin" column as NA in the "Deck" column. Lets make sure that indeed all "Deck" NAs are empty strings in the "Cabin" column.
+There's a different number of "Cabin" and "Deck" missing values, this is because we recoded empty strings in the "Cabin" column as NA in the "Deck" column. Let's make sure that indeed all "Deck" NAs are empty strings in the "Cabin" column.
 ```{r, warning=FALSE}
 unique(dat$Cabin[is.na(dat$Deck)])
 ```
@@ -369,7 +369,7 @@ rf1 <- train(getFeat(trainN), trainN$Survived, method = "ranger",
 glm1 <- train(Survived ~ Pclass + Age + Sex + fSiz + Fare + Embarked,
              method = "glmnet", data = trainN, trControl = control, tuneLength=15)
 
-dt1 <- train(getFeatFull(trainN), trainN$Survived, method = "rpart",
+dt1 <- train(getFeat(trainN), trainN$Survived, method = "rpart",
             trControl = control, tuneLength=15)
 ```
 
@@ -390,17 +390,15 @@ plotImp <- function(caretModel, modelName) {
 }
 
 # plot predictor importance for the full models.
-a <- plotImp(rf, modelName = "random forest")
-b <- plotImp(glm, modelName = "logistic regression")
-c <- plotImp(dt, modelName = "decision tree")
-
-grid.arrange(a, b, c, nrow = 3)
+plotImp(rf, modelName = "random forest")
+plotImp(glm, modelName = "logistic regression")
+plotImp(dt, modelName = "decision tree")
 ```
 
-Looks like there's some differences in how the predictors are weighted. Note that we get the importance of each factor level from the logistic regression. But, consistent with the impression from the raw data, "Sex", "Age" and "Family Size" seem to be relevant predictors for "Survival".
+Looks like there's some differences in how the predictors are weighted. Note that we get the importance of each factor level from the logistic regression. But, consistent with the impression from the raw data, "Sex", "Age" and "Family Size" seem to be relevant predictors for "Survival", but others contribute as well (e.g., "Fare").
 
 But which model fits best? 
-For that, we'll look at two parameters. Accuracy, that is, if we generate new data using our model, how well can we predict the Survival in the new data? Accuracy can be biased if classes are not perfectly balanced. To be on the safe side, we'll also look at Kappa, as it also takes into account the expected error rate. 
+For that, we'll look at two parameters. Accuracy, that is, if we generate new data using our model, how well can we predict the Survival in the new data? Accuracy can be biased if classes are not perfectly balanced. To be on the safe side, we'll also look at Kappa, as it also takes into account the expected error rate. They end up looking pretty much the same, so we're fine.
 ```{r, warning=FALSE}
 # preparations: create a list of models
 models <- list(rf = rf, glm = glm, dt = dt, rf1 = rf1, glm1 = glm1, dt1 = dt1)
@@ -438,4 +436,4 @@ grid.arrange(dotPlotAcc, dotPlotKappa, ncol = 2)
 
 I'd probably go for a model that has a good combination of a high median and small confidence interval and try to boost accuracy by engineering some more features.
 
-To wrap up, there are many lessons that can be learned from a sinking ship. Travel in small groups, being young and female seems to boost your chance at survival (at least it did so for the passengers of the Titanic back in the day). There's much more feature engineering that could be done to boost accuracy. For example, when we checked out the missing cases for the predictor "Embarked" we saw that two women had the same ticket number, but no family relation ("Parch" and "Sibsp"). Other than families, groups of friends or colleagues probably travelled together as well. Ticket number seems to be an indication of such other travel groups, which could additionally help to predict "Survival". Also, the predictor "Names" might include information of ethnicity or socioeconomic status (e.g., titles), which could further improve the model. Moreover, for now, I set up some basic models, but those could obviously be tuned as well (my goal here was to get a pipeline to work first). Well, that was fun! Be back soon.
+To wrap up, there are many lessons that can be learned from a sinking ship. Traveling in small groups, being young and female seems to boost your chance at survival (at least it did so for the passengers of the Titanic back in the day). There's much more feature engineering that could be done to boost accuracy. For example, when we checked out the missing cases for the predictor "Embarked" we saw that two women had the same ticket number, but no family relation ("Parch" and "Sibsp"). Other than families, groups of friends or colleagues probably travelled together as well. Ticket number seems to be an indication of such other travel groups, which could additionally help to predict "Survival". Also, the predictor "Names" might include information of ethnicity or socioeconomic status (e.g., titles), which could further improve the model. Moreover, for now, I set up some basic models, but those could obviously be tuned as well (my goal here was to get a pipeline to work first). Well, that was fun! Be back soon.
