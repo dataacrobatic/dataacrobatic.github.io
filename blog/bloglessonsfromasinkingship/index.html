@@ -496,7 +496,7 @@ dotPlotKappa &lt;- ggplot(kappaOut, aes(Model, Median, colour=Model)) +
   coord_flip() +
   customThemeCol(type = &quot;colour&quot;, nCol=length(levels(kappaOut$Model))) +
   theme(legend.position=&quot;none&quot;) +
-  labs(x=&quot;Model&quot;, y=&quot;Kappa&quot;, title=paste(&quot;Model Fit: kappa&quot;, sep=&quot;&quot;)) 
+  labs(x=&quot;Model (Median (95% CI))&quot;, y=&quot;Kappa&quot;, title=paste(&quot;Model Fit: kappa&quot;, sep=&quot;&quot;)) 
 
 grid.arrange(dotPlotAcc, dotPlotKappa, ncol = 2)</code></pre>
 <p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-32-1.png" width="672" /></p>

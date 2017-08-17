@@ -431,7 +431,7 @@ dotPlotKappa <- ggplot(kappaOut, aes(Model, Median, colour=Model)) +
   coord_flip() +
   customThemeCol(type = "colour", nCol=length(levels(kappaOut$Model))) +
   theme(legend.position="none") +
-  labs(x="Model", y="Kappa", title=paste("Model Fit: kappa", sep="")) 
+  labs(x="Model (Median (95% CI))", y="Kappa", title=paste("Model Fit: kappa", sep="")) 
 
 grid.arrange(dotPlotAcc, dotPlotKappa, ncol = 2)
 ```
