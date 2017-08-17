@@ -6,8 +6,8 @@
     <description>Recent content in Tags on Janina Brandes</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <copyright>&amp;copy;2016 Janina Brandes</copyright>
-    <lastBuildDate>Wed, 09 Aug 2017 18:50:37 +0200</lastBuildDate>
+    <copyright>&amp;copy;2017 Janina Brandes</copyright>
+    <lastBuildDate>Mon, 07 Aug 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
@@ -15,34 +15,61 @@
     <item>
       <title>Colour</title>
       <link>/tags/colour/</link>
-      <pubDate>Wed, 09 Aug 2017 18:50:37 +0200</pubDate>
+      <pubDate>Mon, 07 Aug 2017 00:00:00 +0000</pubDate>
       
       <guid>/tags/colour/</guid>
       <description></description>
     </item>
     
     <item>
+      <title>Decision Tree</title>
+      <link>/tags/decision-tree/</link>
+      <pubDate>Thu, 17 Aug 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/decision-tree/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Ggplot</title>
       <link>/tags/ggplot/</link>
-      <pubDate>Wed, 09 Aug 2017 18:50:37 +0200</pubDate>
+      <pubDate>Mon, 07 Aug 2017 00:00:00 +0000</pubDate>
       
       <guid>/tags/ggplot/</guid>
       <description></description>
     </item>
     
     <item>
+      <title>Logistic Regression</title>
+      <link>/tags/logistic-regression/</link>
+      <pubDate>Thu, 17 Aug 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/logistic-regression/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>R</title>
       <link>/tags/r/</link>
-      <pubDate>Wed, 09 Aug 2017 18:50:37 +0200</pubDate>
+      <pubDate>Thu, 17 Aug 2017 00:00:00 +0000</pubDate>
       
       <guid>/tags/r/</guid>
       <description></description>
     </item>
     
     <item>
+      <title>Random Forest</title>
+      <link>/tags/random-forest/</link>
+      <pubDate>Thu, 17 Aug 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/random-forest/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Visualization</title>
       <link>/tags/visualization/</link>
-      <pubDate>Wed, 09 Aug 2017 18:50:37 +0200</pubDate>
+      <pubDate>Mon, 07 Aug 2017 00:00:00 +0000</pubDate>
       
       <guid>/tags/visualization/</guid>
       <description></description>

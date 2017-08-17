@@ -6,16 +6,27 @@
     <description>Recent content in R on Janina Brandes</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <copyright>&amp;copy;2016 Janina Brandes</copyright>
-    <lastBuildDate>Wed, 09 Aug 2017 18:50:37 +0200</lastBuildDate>
+    <copyright>&amp;copy;2017 Janina Brandes</copyright>
+    <lastBuildDate>Thu, 17 Aug 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>Lessons from a sinking ship</title>
+      <link>/blog/bloglessonsfromasinkingship/</link>
+      <pubDate>Thu, 17 Aug 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/bloglessonsfromasinkingship/</guid>
+      <description>During my first blogged dataacrobatics, I’d like to play with the Titanic data from Kaggle. My goal is to explore the data, engineer some basic features, build a few basic models, and compare their fit. Thus, my aim is to get a pipeline running and skip tweaking details for now.
+Preparations: clear workspace, detach packages, prepare custom plotting theme.
+# clear the workspace. rm(list = ls()) # detach packages to avoid interferences.</description>
+    </item>
+    
+    <item>
       <title>Create a custom graphics theme</title>
       <link>/blog/blogcustomtheme/</link>
-      <pubDate>Wed, 09 Aug 2017 18:50:37 +0200</pubDate>
+      <pubDate>Mon, 07 Aug 2017 00:00:00 +0000</pubDate>
       
       <guid>/blog/blogcustomtheme/</guid>
       <description>Customizing ggplots by hand works fine, but can be tideous if you’re doing it over and over again during a project (which I have). Therefore, creating a custom ggplot theme that includes adaptations of style/ colour and that can be stored and loaded on demand has been on my to do list for a while. This seems like a good place to start a blog… So here it comes.

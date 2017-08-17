@@ -1,0 +1,441 @@
+---
+date: 2017-08-17
+title: Lessons from a sinking ship
+type: "post"
+author: Janina Brandes
+description: "Playing around with the Titanic data from Kaggle."
+draft: false
+image: "blog/ship.jpg"
+showonlyimage: true
+tags: ["R", "random forest", "decision tree", "logistic regression"]
+---
+
+<img src="/blog/ship.jpg" width="500">
+
+During my first blogged dataacrobatics, I'd like to play with the Titanic data from Kaggle. My goal is to explore the data, engineer some basic features, build a few basic models, and compare their fit. Thus, my aim is to get a pipeline running and skip tweaking details for now.
+
+Preparations: clear workspace, detach packages, prepare custom plotting theme.
+``` {r, warning=FALSE}
+# clear the workspace.
+rm(list = ls())
+```
+
+``` {r, warning=FALSE}
+# detach packages to avoid interferences.
+detachAllPackages <- function() { 
+  # store basic packages names in a list
+  basic.packages <- c("package:stats","package:graphics","package:grDevices","package:utils","package:datasets","package:methods","package:base")  
+  # make list of all loaded packages
+  package.list <- search()[ifelse(unlist(gregexpr("package:",search()))==1,TRUE,FALSE)]
+  # remove basic packages from the list
+  package.list <- setdiff(package.list,basic.packages)
+  # remove all packages from the list
+  if (length(package.list)>0)  for (package in package.list) detach(package, character.only=TRUE)
+}
+detachAllPackages()
+```
+
+``` {r, warning=FALSE}
+# initialize custom plotting theme.
+customThemeCol <- function(base_size = 8, base_family = "sans", type=NULL, nCol=3){
+  # set up the number of colours here.  
+  if (nCol != 3) {
+    customColours <-  colorRampPalette(c("#6d758e", "#985e6d", "#ccc2b5"), space = "Lab")(nCol)
+  } else {
+    customColours <-  c("#6d758e", "#985e6d", "#ccc2b5")
+  }
+  # set up the other arguments for the selected scale.
+  l <-list()
+  if (type == "fill"){
+    arg <- "scale_fill_manual"
+    l[["values"]]<-customColours
+  } 
+  if (type == "colour"){
+    arg <- "scale_colour_manual"
+    l[["values"]]<-customColours
+  }
+  if (type == "gradient2"){
+    arg <- "scale_colour_gradient2"
+    l[["low"]]<-customColours[1]
+    l[["high"]]<-customColours[2]
+    l[["na.value"]]<-"grey50"
+    l[["guide"]]<-"colourbar"
+  }
+  # pass the scale arguments to the list that holds the adapted black/ white theme.    
+  list(theme_bw(base_size = base_size, base_family = base_family) +
+         theme(axis.text = element_text(size = 12),
+               axis.title = element_text(size = 14),
+               plot.title = element_text(size = 15, hjust=0.5, face = "bold"),
+               strip.background = element_rect(colour = "white", fill="#FFFFFF"),
+               strip.text.x = element_text(size = 14),
+               strip.text.y = element_text(size = 14),
+               legend.text = element_text(size = 12),
+               legend.title = element_text(size = 12)), 
+       do.call(arg, args=l))
+}
+```
+
+``` {r, include=TRUE, message=FALSE}
+# load packages
+library(titanic) # data
+library(ggplot2) # visualization
+library(dplyr) # data manipulation
+library(R.utils) # colClasses function
+library(mice)  # imputation
+library(caret) # model fitting
+library(VIM) # visualize missing data
+library(randomForest) # needed for mice/ caret
+library(gridExtra) # visualization
+library(grid) # visualization
+
+```
+
+Combine training and test data in a common set for exploration.
+``` {r, warning=FALSE}
+titanic_train$set <- "train"
+titanic_test$set <- "test"
+dat <- bind_rows(titanic_train, titanic_test) 
+```
+
+Check out the full data set.
+``` {r, warning=FALSE}
+str(dat)
+```
+Alright. Our goal is to predict "Survival" (binary: Yes=1 or No=0) based on the other features/ predictors we have (e.g., "Age", "Sex", "Embarked"). The features are a mixture of categorical variables and numericals.
+
+Recode some variables into factors and leave all others as they are for now. 
+``` {r, warning=FALSE}
+dat<-data.frame(mapply(function(dat, class) match.fun(paste("as", class, sep="."))(dat), 
+                       dat, colClasses("fffcfdiicdcf"), SIMPLIFY=FALSE), stringsAsFactors=FALSE)
+
+```
+
+Let's plot some features and check out whether they could be related to survival.
+Have a look at age "Pclass", i.e., ticket class, first.
+```{r, warning=FALSE,results='hide',fig.keep='all'}
+# ticket class. 
+barPlotPClass <- ggplot(dat[dat$set == "train",], aes(Survived, fill=Pclass)) + 
+  geom_bar(stat="count", size=3, position='dodge') + 
+  customThemeCol(type = "fill") +
+  labs(x="Survived", y="Count", fill="Ticket class", title="Survival by ticket class")   
+barPlotPClass
+```
+
+People with a ticket of the class "3" were a lot less likely to survive than people with tickets of the classes "1" and "2".
+Next, have a look at "Sex".
+```{r, warning=FALSE, results='hide',fig.keep='all'}
+# sex.
+barPlotSex <- ggplot(dat[dat$set == "train",], aes(Survived, fill=Sex)) + 
+  geom_bar(stat="count", size=3, position='dodge') + 
+  customThemeCol(type = "fill") +
+  labs(x="Survived", y="Count", fill="Sex", title="Survival by sex")   
+barPlotSex
+```
+
+Females were more likely to survive than males. 
+Finally, let's look at "Age" and its interaction with "Sex".
+```{r, warning=FALSE, results='hide',fig.keep='all', message=FALSE}
+# age.
+histoAgeSur <- ggplot(dat[dat$set == "train",], aes(Age, fill=Survived)) + 
+  geom_histogram() + 
+  customThemeCol(type = "fill") +  
+  facet_grid(.~Sex) +
+  labs(x="Age", y="Count", colours="Survived", title="Survival by age")   
+histoAgeSur
+```
+
+It looks like middle-aged people were less likely to survive that young or old ones and this relationship seems to depend on Sex. 
+
+Lets engineer some additional features.
+First, calculate family size from "SibSp" (= n siblings/ spouses aboard) and "Parch" (= n parents/ children aboard), including the passenger him-/herself.
+```{r, warning=FALSE, results='hide',fig.keep='all'}
+dat$fSiz <- as.factor(dat$SibSp + dat$Parch + 1)
+
+barPlotfSiz <- ggplot(dat[dat$set == "train",], aes(fSiz, fill=Survived)) + 
+  geom_bar(stat="count", size=3, position='dodge') + 
+  customThemeCol(type = "fill") +
+  labs(x="Familiy size", y="Count", colours="Survived", title="Survival by familiy size")   
+barPlotfSiz
+```
+
+Looks like family size ("fSiz") is of importance, too.
+Singles were less likely to survive than families. Smaller families were more likely to survive than larger ones.
+
+The letter in the "Cabin" variable indicates the deck. Let's extract it and create a new "Deck" predictor and plot it.
+```{r, warning=FALSE, results='hide',fig.keep='all'}
+# function to extract letter from string.
+getLetter <- function(x){
+  y <- unique(na.omit(unlist(strsplit(unlist(x), "[^a-zA-Z]+"))))
+  if (is.na(y[1]) == TRUE) {
+    return(NA)
+  } else {
+    return(y)
+  }
+}
+
+# apply to each cell.
+for (i in 1: dim(dat)[1]) {
+  dat$Deck[i] <- getLetter(dat$Cabin[i])[1]
+}
+
+# recode as factor and check out the result.
+dat$Deck <- as.factor(dat$Deck)
+unique(dat$Deck)
+
+barPlotDeck <- ggplot(dat[dat$set == "train",], aes(Deck, fill=Survived)) + 
+  geom_bar(stat="count", size=3, position='dodge') + 
+  customThemeCol(type = "fill") +
+  labs(x="Deck", y="Count", colours="Survived", title="Survival by deck")   
+barPlotDeck
+```
+
+Might be relevant, but it seems like there're a lot of missings.
+
+Let's deal with that next.
+First, let's set empty strings to NA in the "Embarked" column. Let's skip the "Names", "Ticket" and "Cabin" columns for now.
+```{r, warning=FALSE}
+dat$Embarked[dat$Embarked == ""] <- NA
+index <- dat[(which(is.na(dat$Embarked))),1]
+dat[(which(is.na(dat$Embarked))),]
+```
+
+Two people are missing the "Embarked" column. Let's look at where others with the same ticket class ("1") embarked and how much they paid ("Fare"). Then, fill the NAs with the most likely value (similar price and the same ticket class; here: "C").
+```{r, warning=FALSE}
+dat %>%
+  group_by(Embarked, Pclass) %>%
+  filter(Pclass == "1") %>%
+  summarise(medianFare = median(Fare), n = n())
+dat$Embarked[index] <- "C"
+```
+
+Let's have a look at the missings of the whole data set.
+```{r, warning=FALSE}
+missingsPlot <- aggr(dat, col=c("#6d758e", "#985e6d"), numbers=TRUE, 
+                  sortVars=TRUE, labels=names(dat), cex.axis=.7, gap=3, combined= T,
+                  ylab=c("Missing data","Pattern")) 
+```
+
+Ok, we're missing some decks, ages, and survivals.
+Check out whether the missings in the "Survival" column correspond to the size of the test data.
+```{r, warning=FALSE}
+sum(is.na(dat$Survived)) == dim(titanic_test)[1]
+```
+
+Yes, they do. We can ignore those.
+There is a different number of "Cabin" and "Deck" missings, this is because we recoded empty strings in the "Cabin" column as NA in the "Deck" column. Lets make sure that indeed all "Deck" NAs are empty strings in the "Cabin" column.
+```{r, warning=FALSE}
+unique(dat$Cabin[is.na(dat$Deck)])
+```
+Ok, looks good. The output from the plot shows that there's just one missing "Fare" value. Let's look at the details of this passenger.
+```{r, warning=FALSE}
+index <- dat[(which(is.na(dat$Fare))),1]
+dat[(which(is.na(dat$Fare))),]
+```
+
+The passenger embarked in "S" and had the ticket class "3". We'll replace his fare with the median of all other passengers with the same ticket class who embarked here ("missingFare" = 8.05).
+```{r, warning=FALSE}
+missingFare <- dat %>%
+  filter(Pclass == "3" & Embarked == "S") %>%
+  summarise(missingFare = median(Fare, na.rm = TRUE))
+missingFare
+dat$Fare[index] <- missingFare[1,1]
+```
+
+Let's impute "Age" and "Deck" using all but character predictors and our dependent variable using a random forest...
+```{r, warning=FALSE}
+miceDat <- mice(dat[, !names(dat) %in% c('PassengerId','Name','Ticket','Survived')], method='rf', printFlag = FALSE) 
+miceOut <- complete(miceDat)
+```
+
+... and have a look at the results. For that, we'll compare the distributions of the original and the imputed data.
+```{r, warning=FALSE, results='hide',fig.keep='all', message=FALSE}
+# age
+histoAge <- ggplot(dat, aes(Age)) + 
+  geom_density(fill="#6d758e") + 
+  scale_y_continuous(limits = c(0,0.04)) +
+  customThemeCol(type = "fill") +
+  labs(x="Age", y="Density", title="Titanic: original data")   
+
+histoAgeIm <- ggplot(miceOut, aes(Age)) + 
+  geom_density(fill="#985e6d") + 
+  scale_y_continuous(limits = c(0,0.04)) +
+  customThemeCol(type = "fill") +
+  labs(x="Age", y="Density", title="Titanic: imputation")   
+
+grid.arrange(histoAge, histoAgeIm, ncol = 2)
+```
+
+Looks good, so we'll replace the original with the imputed data.
+```{r, warning=FALSE}
+dat$Age <- miceOut$Age
+```
+
+Finally, let's look at the "Deck" imputation. This one is tricky, because it's a categorical variable and we have many missings.
+```{r, warning=FALSE, results='hide',fig.keep='all'}
+barPlotDeck <- ggplot(dat, aes(Deck, fill=Deck)) + 
+  geom_bar(stat="count", size=3, position='dodge') + 
+  scale_y_continuous(limits = c(0,450)) +
+  customThemeCol(type = "fill", nCol=length(levels(dat$Deck))) +
+  labs(x="Deck", y="Count", title="Titanic: original data")   
+
+barPlotDeckIm <- ggplot(miceOut, aes(Deck, fill=Deck)) + 
+  geom_bar(stat="count", size=3, position='dodge') + 
+  scale_y_continuous(limits = c(0,450)) +
+  customThemeCol(type = "fill", nCol=length(levels(dat$Deck))) +
+  labs(x="Deck", y="Count", title="Titanic: imputation") 
+
+grid.arrange(barPlotDeck, barPlotDeckIm, ncol = 2)
+```
+
+Well, not great, but who knows? Let's save the imputation and check later whether adding the predictor "Deck" leads to a better model fit.
+```{r, warning=FALSE}
+dat$Deck <- miceOut$Deck
+```
+
+Check the results again to to make sure that everything looks as expected.
+```{r, warning=FALSE}
+# check again.
+missingsPlot <- aggr(dat, col=c("#6d758e", "#985e6d"), numbers=TRUE, 
+                     sortVars=TRUE, labels=names(dat), cex.axis=.7, gap=3, combined= T,
+                     ylab=c("Missing data","Pattern")) 
+```
+
+Looks good, no more missings other than those expected ("Survived").
+Let's run some models and compare their fit. First, set up two functions to extract features.
+```{r, warning=FALSE}
+# including the imputed "Deck" variable.
+getFeatFull <- function(dat) {
+  feat <- c("Pclass",
+            "Age",
+            "Sex",
+            "fSiz",
+            "Fare",
+            "Embarked",
+            "Deck")
+  feaDat <- dat[,feat]
+  return(feaDat)
+}
+
+# excluding the imputed "Deck" variable.
+getFeat <- function(dat) {
+  feat <- c("Pclass",
+            "Age",
+            "Sex",
+            "fSiz",
+            "Fare",
+            "Embarked")
+  feaDat <- dat[,feat]
+  return(feaDat)
+}
+```
+
+Split the data into train and test again.
+```{r, warning=FALSE}
+train <- dat[dat$set == "train",]
+test <- dat[dat$set == "test",]
+```
+
+Normalize continuous variables by centering and scaling. This helps model fit.
+```{r, warning=FALSE}
+# get normalization parameters.
+normPar <- preProcess(train, method = c("center", "scale"))
+
+# apply.
+trainN <- predict(normPar,train)
+```
+
+Create model fitting control parameters so that they are are always the same for each model and we can compare the results.
+```{r, warning=FALSE}
+control <- trainControl(method = "cv", number = 10, repeats = 10, 
+                        verboseIter = TRUE)
+```
+
+Run three different models: a random forest, a logistic regression, and a decision tree. Notations differ a bit depending on the underlying package that is called by caret. First, run full versions including the imputed "Deck" variable, then versions excluding "Deck".
+```{r, warning=FALSE, results='hide', message=FALSE}
+# full.
+rf <- train(getFeatFull(trainN), trainN$Survived, method = "ranger",
+            trControl = control, importance = "impurity", tuneLength=15)
+
+glm <- train(Survived ~ Pclass + Age + Sex + fSiz + Fare + Embarked + Deck, 
+             method = "glmnet", data = trainN, trControl = control, tuneLength=15)
+
+dt <- train(getFeatFull(trainN), trainN$Survived, method = "rpart",
+            trControl = control, tuneLength=15)
+
+# excluding "Deck".
+rf1 <- train(getFeat(trainN), trainN$Survived, method = "ranger", 
+            trControl = control, importance = "impurity", tuneLength=15)
+
+glm1 <- train(Survived ~ Pclass + Age + Sex + fSiz + Fare + Embarked,
+             method = "glmnet", data = trainN, trControl = control, tuneLength=15)
+
+dt1 <- train(getFeatFull(trainN), trainN$Survived, method = "rpart",
+            trControl = control, tuneLength=15)
+```
+
+Plot the contribution of each predictor and compare models.
+```{r, warning=FALSE, results='hide',fig.keep='all'}
+# function to plot variable importance.
+plotImp <- function(caretModel, modelName) {
+  imp <- varImp(caretModel)$importance
+  imp$Feature <- as.factor(rownames(imp))
+  imp$Importance <- imp$Overall
+  barPlotFeatImp <- ggplot(imp, aes(reorder(Feature, Importance), Importance, fill=Feature)) + 
+    geom_bar(stat="identity", size=3, position='dodge') + 
+    coord_flip() +
+    customThemeCol(type = "fill", nCol=length(levels(imp$Feature))) +
+    theme(legend.position="none") +
+    labs(x="Feature", y="Importance", title=paste("Predictor importance: ", modelName, sep="")) 
+  barPlotFeatImp
+}
+
+# plot predictor importance for the full models.
+a <- plotImp(rf, modelName = "random forest")
+b <- plotImp(glm, modelName = "logistic regression")
+c <- plotImp(dt, modelName = "decision tree")
+
+grid.arrange(a, b, c, nrow = 3)
+```
+
+Looks like there's some differences in how the predictors are weighted. Note that we get the importance of each factor level from the logistic regression. But, consistent with the impression from the raw data, "Sex", "Age" and "Family Size" seem to be relevant predictors for "Survival".
+
+But which model fits best? 
+For that, we'll look at two parameters. Accuracy, that is, if we generate new data using our model, how well can we predict the Survival in the new data? Accuracy can be biased if classes are not perfectly balanced. To be on the safe side, we'll also look at Kappa, as it also takes into account the expected error rate. 
+```{r, warning=FALSE}
+# preparations: create a list of models
+models <- list(rf = rf, glm = glm, dt = dt, rf1 = rf1, glm1 = glm1, dt1 = dt1)
+
+# resample the models
+resampled <- resamples(models)
+
+# save accuracy as data.frame and create "Model" variable.
+accOut <-data.frame(summary(resampled)[[3]][[1]])
+accOut$Model <- as.factor(rownames(accOut))
+
+# save kappa as data.frame and create "Model" variable.
+kappaOut <-data.frame(summary(resampled)[[3]][[2]])
+kappaOut$Model <- as.factor(rownames(kappaOut))
+
+# plot the differences between model fits
+dotPlotAcc <- ggplot(accOut, aes(Model, Median, colour=Model)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin=X1st.Qu., ymax=X3rd.Qu.), width=.1, position=position_dodge(0.1)) +
+  coord_flip() +
+  customThemeCol(type = "colour", nCol=length(levels(accOut$Model))) +
+  theme(legend.position="none") +
+  labs(x="Model", y="Accuracy", title=paste("Model Fit: accuracy", sep="")) 
+
+dotPlotKappa <- ggplot(kappaOut, aes(Model, Median, colour=Model)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin=X1st.Qu., ymax=X3rd.Qu.), width=.1, position=position_dodge(0.1)) +
+  coord_flip() +
+  customThemeCol(type = "colour", nCol=length(levels(kappaOut$Model))) +
+  theme(legend.position="none") +
+  labs(x="Model", y="Kappa", title=paste("Model Fit: kappa", sep="")) 
+
+grid.arrange(dotPlotAcc, dotPlotKappa, ncol = 2)
+```
+
+I'd probably go for a model that has a good combination of a high median and small confidence interval and try to boost accuracy by engineering some more features.
+
+To wrap up, there are many lessons that can be learned from a sinking ship. Travel in small groups, being young and female seems to boost your chance at survival (at least it did so for the passengers of the Titanic back in the day). There's much more feature engineering that could be done to boost accuracy. For example, when we checked out the missing cases for the predictor "Embarked" we saw that two women had the same ticket number, but no family relation ("Parch" and "Sibsp"). Other than families, groups of friends or colleagues probably travelled together as well. Ticket number seems to be an indication of such other travel groups, which could additionally help to predict "Survival". Also, the predictor "Names" might include information of ethnicity or socioeconomic status (e.g., titles), which could further improve the model. Moreover, for now, I set up some basic models, but those could obviously be tuned as well (my goal here was to get a pipeline to work first). Well, that was fun! Be back soon.

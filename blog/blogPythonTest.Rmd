@@ -1,0 +1,45 @@
+---
+date: 2017-08-09T18:50:37+02:00
+title: Make a Python Test
+type: "post"
+author: Janina Brandes
+description: "How to create an custom theme that includes adaptations of style and colour."
+draft: false
+image: "blog/tm.jpg"
+showonlyimage: false
+tags: ["R", "visualization", "colour", "ggplot"]
+---
+
+Test test test
+
+``` {python, warning=FALSE}
+
+from __future__ import division
+from matplotlib import pyplot as plt
+from collections import Counter
+
+users = [
+    { "id": 0, "name": "Hero" },
+    { "id": 1, "name": "Dunn" },
+    { "id": 2, "name": "Sue" },
+    { "id": 3, "name": "Chi" },
+    { "id": 4, "name": "Thor" },
+    { "id": 5, "name": "Clive" },
+    { "id": 6, "name": "Hicks" },
+    { "id": 7, "name": "Devin" },
+    { "id": 8, "name": "Kate" },
+    { "id": 9, "name": "Klein" },
+    { "id": 10, "name": "Jen" }
+]
+
+friendships = [(0, 1), (0, 2), (1, 2), (1, 3), (2, 3), (3, 4),
+               (4, 5), (5, 6), (5, 7), (6, 8), (7, 8), (8, 9)]
+               
+numFriends = [100, 49, 41, 40, 50, 60, 90, 87, 76, 100, 44, 54, 65, 83, 51, 49]
+friendsCounts = Counter(numFriends)
+xs = range(101)
+ys = [friendsCounts[x] for x in xs]
+plt.bar(xs, ys)
+plt.axis([0, 101, 0, 25])
+plt.show()
+```

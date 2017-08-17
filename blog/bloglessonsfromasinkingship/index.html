@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Lessons from a sinking ship</title>
+<meta name="description" content="Describe your website">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="all,follow">
+<meta name="googlebot" content="index,follow,snippet,archive">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400,300,700,400italic">
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+<link rel="stylesheet" href="/css/owl.carousel.css">
+<link rel="stylesheet" href="/css/owl.theme.css">
+
+
+  <link href="/css/style.custom.css" rel="stylesheet" id="theme-stylesheet">
+
+ 
+
+  
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  
+
+
+<link href="/css/custom.css" rel="stylesheet">
+<link rel="shortcut icon" href="/img/favicon.png">
+
+
+</head>
+<body>
+  <div id="all">
+      <div class="container-fluid">
+          <div class="row row-offcanvas row-offcanvas-left">
+              <div id="sidebar" class="col-xs-6 col-sm-4 col-md-3 sidebar-offcanvas">
+  <div class="sidebar-content">
+    <h1 class="sidebar-heading"><a href="/">Janina Brandes</a></h1>
+    
+      <p class="sidebar-p">I'm a dataacrobatic psychologist based in Hamburg.</p>
+    
+      <p class="sidebar-p">Let's begin to play.</p>
+    
+    <ul class="sidebar-menu">
+      
+      
+        <li><a href="/">Home</a></li>
+      
+        <li><a href="/about/">About</a></li>
+      
+        <li><a href="/blog/">Blog</a></li>
+      
+        <li><a href="/contact/">Get in touch</a></li>
+      
+    </ul>
+    <p class="social">
+  
+  
+  
+  <a href="https://twitter.com/BrandesJanina" data-animate-hover="pulse" class="external twitter">
+    <i class="fa fa-twitter"></i>
+  </a>
+  
+  
+  
+  <a href="mailto:dataacrobatic@gmail.com" data-animate-hover="pulse" class="email">
+    <i class="fa fa-envelope"></i>
+  </a>
+  
+  
+  
+  
+  <a href="https://github.com/dataacrobatic" data-animate-hover="pulse">
+    <i class="fa fa-github"></i>
+  </a>
+  
+</p>
+
+
+    <div class="copyright">
+      <p class="credit">
+        
+          &copy;2017 Janina Brandes
+        
+        | Template by <a href="https://bootstrapious.com/free-templates" class="external">Bootstrapious.com</a>
+
+&amp; ported to Hugo by <a href="https://github.com/kishaningithub">Kishan B</a>
+
+      </p>
+    </div>
+  </div>
+</div>
+
+              
+<div class="col-xs-12 col-sm-8 col-md-9 content-column white-background">
+  <div class="small-navbar visible-xs">
+  <button type="button" data-toggle="offcanvas" class="btn btn-ghost pull-left"> <i class="fa fa-align-left"> </i>Menu</button>
+  <h1 class="small-navbar-heading"><a href="/">Janina Brandes</a></h1>
+</div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="content-column-content">
+         <h1>Lessons from a sinking ship</h1>
+         <p><img src="/blog/ship.jpg" width="500"></p>
+<p>During my first blogged dataacrobatics, I’d like to play with the Titanic data from Kaggle. My goal is to explore the data, engineer some basic features, build a few basic models, and compare their fit. Thus, my aim is to get a pipeline running and skip tweaking details for now.</p>
+<p>Preparations: clear workspace, detach packages, prepare custom plotting theme.</p>
+<pre class="r"><code># clear the workspace.
+rm(list = ls())</code></pre>
+<pre class="r"><code># detach packages to avoid interferences.
+detachAllPackages &lt;- function() { 
+  # store basic packages names in a list
+  basic.packages &lt;- c(&quot;package:stats&quot;,&quot;package:graphics&quot;,&quot;package:grDevices&quot;,&quot;package:utils&quot;,&quot;package:datasets&quot;,&quot;package:methods&quot;,&quot;package:base&quot;)  
+  # make list of all loaded packages
+  package.list &lt;- search()[ifelse(unlist(gregexpr(&quot;package:&quot;,search()))==1,TRUE,FALSE)]
+  # remove basic packages from the list
+  package.list &lt;- setdiff(package.list,basic.packages)
+  # remove all packages from the list
+  if (length(package.list)&gt;0)  for (package in package.list) detach(package, character.only=TRUE)
+}
+detachAllPackages()</code></pre>
+<pre class="r"><code># initialize custom plotting theme.
+customThemeCol &lt;- function(base_size = 8, base_family = &quot;sans&quot;, type=NULL, nCol=3){
+  # set up the number of colours here.  
+  if (nCol != 3) {
+    customColours &lt;-  colorRampPalette(c(&quot;#6d758e&quot;, &quot;#985e6d&quot;, &quot;#ccc2b5&quot;), space = &quot;Lab&quot;)(nCol)
+  } else {
+    customColours &lt;-  c(&quot;#6d758e&quot;, &quot;#985e6d&quot;, &quot;#ccc2b5&quot;)
+  }
+  # set up the other arguments for the selected scale.
+  l &lt;-list()
+  if (type == &quot;fill&quot;){
+    arg &lt;- &quot;scale_fill_manual&quot;
+    l[[&quot;values&quot;]]&lt;-customColours
+  } 
+  if (type == &quot;colour&quot;){
+    arg &lt;- &quot;scale_colour_manual&quot;
+    l[[&quot;values&quot;]]&lt;-customColours
+  }
+  if (type == &quot;gradient2&quot;){
+    arg &lt;- &quot;scale_colour_gradient2&quot;
+    l[[&quot;low&quot;]]&lt;-customColours[1]
+    l[[&quot;high&quot;]]&lt;-customColours[2]
+    l[[&quot;na.value&quot;]]&lt;-&quot;grey50&quot;
+    l[[&quot;guide&quot;]]&lt;-&quot;colourbar&quot;
+  }
+  # pass the scale arguments to the list that holds the adapted black/ white theme.    
+  list(theme_bw(base_size = base_size, base_family = base_family) +
+         theme(axis.text = element_text(size = 12),
+               axis.title = element_text(size = 14),
+               plot.title = element_text(size = 15, hjust=0.5, face = &quot;bold&quot;),
+               strip.background = element_rect(colour = &quot;white&quot;, fill=&quot;#FFFFFF&quot;),
+               strip.text.x = element_text(size = 14),
+               strip.text.y = element_text(size = 14),
+               legend.text = element_text(size = 12),
+               legend.title = element_text(size = 12)), 
+       do.call(arg, args=l))
+}</code></pre>
+<pre class="r"><code># load packages
+library(titanic) # data
+library(ggplot2) # visualization
+library(dplyr) # data manipulation
+library(R.utils) # colClasses function
+library(mice)  # imputation
+library(caret) # model fitting
+library(VIM) # visualize missing data
+library(randomForest) # needed for mice/ caret
+library(gridExtra) # visualization
+library(grid) # visualization</code></pre>
+<p>Combine training and test data in a common set for exploration.</p>
+<pre class="r"><code>titanic_train$set &lt;- &quot;train&quot;
+titanic_test$set &lt;- &quot;test&quot;
+dat &lt;- bind_rows(titanic_train, titanic_test) </code></pre>
+<p>Check out the full data set.</p>
+<pre class="r"><code>str(dat)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    1309 obs. of  13 variables:
+##  $ PassengerId: int  1 2 3 4 5 6 7 8 9 10 ...
+##  $ Survived   : int  0 1 1 1 0 0 0 0 1 1 ...
+##  $ Pclass     : int  3 1 3 1 3 3 1 3 3 2 ...
+##  $ Name       : chr  &quot;Braund, Mr. Owen Harris&quot; &quot;Cumings, Mrs. John Bradley (Florence Briggs Thayer)&quot; &quot;Heikkinen, Miss. Laina&quot; &quot;Futrelle, Mrs. Jacques Heath (Lily May Peel)&quot; ...
+##  $ Sex        : chr  &quot;male&quot; &quot;female&quot; &quot;female&quot; &quot;female&quot; ...
+##  $ Age        : num  22 38 26 35 35 NA 54 2 27 14 ...
+##  $ SibSp      : int  1 1 0 1 0 0 0 3 0 1 ...
+##  $ Parch      : int  0 0 0 0 0 0 0 1 2 0 ...
+##  $ Ticket     : chr  &quot;A/5 21171&quot; &quot;PC 17599&quot; &quot;STON/O2. 3101282&quot; &quot;113803&quot; ...
+##  $ Fare       : num  7.25 71.28 7.92 53.1 8.05 ...
+##  $ Cabin      : chr  &quot;&quot; &quot;C85&quot; &quot;&quot; &quot;C123&quot; ...
+##  $ Embarked   : chr  &quot;S&quot; &quot;C&quot; &quot;S&quot; &quot;S&quot; ...
+##  $ set        : chr  &quot;train&quot; &quot;train&quot; &quot;train&quot; &quot;train&quot; ...</code></pre>
+<p>Alright. Our goal is to predict “Survival” (binary: Yes=1 or No=0) based on the other features/ predictors we have (e.g., “Age”, “Sex”, “Embarked”). The features are a mixture of categorical variables and numericals.</p>
+<p>Recode some variables into factors and leave all others as they are for now.</p>
+<pre class="r"><code>dat&lt;-data.frame(mapply(function(dat, class) match.fun(paste(&quot;as&quot;, class, sep=&quot;.&quot;))(dat), 
+                       dat, colClasses(&quot;fffcfdiicdcf&quot;), SIMPLIFY=FALSE), stringsAsFactors=FALSE)</code></pre>
+<p>Let’s plot some features and check out whether they could be related to survival. Have a look at age “Pclass”, i.e., ticket class, first.</p>
+<pre class="r"><code># ticket class. 
+barPlotPClass &lt;- ggplot(dat[dat$set == &quot;train&quot;,], aes(Survived, fill=Pclass)) + 
+  geom_bar(stat=&quot;count&quot;, size=3, position=&#39;dodge&#39;) + 
+  customThemeCol(type = &quot;fill&quot;) +
+  labs(x=&quot;Survived&quot;, y=&quot;Count&quot;, fill=&quot;Ticket class&quot;, title=&quot;Survival by ticket class&quot;)   
+barPlotPClass</code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>People with a ticket of the class “3” were a lot less likely to survive than people with tickets of the classes “1” and “2”. Next, have a look at “Sex”.</p>
+<pre class="r"><code># sex.
+barPlotSex &lt;- ggplot(dat[dat$set == &quot;train&quot;,], aes(Survived, fill=Sex)) + 
+  geom_bar(stat=&quot;count&quot;, size=3, position=&#39;dodge&#39;) + 
+  customThemeCol(type = &quot;fill&quot;) +
+  labs(x=&quot;Survived&quot;, y=&quot;Count&quot;, fill=&quot;Sex&quot;, title=&quot;Survival by sex&quot;)   
+barPlotSex</code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Females were more likely to survive than males. Finally, let’s look at “Age” and its interaction with “Sex”.</p>
+<pre class="r"><code># age.
+histoAgeSur &lt;- ggplot(dat[dat$set == &quot;train&quot;,], aes(Age, fill=Survived)) + 
+  geom_histogram() + 
+  customThemeCol(type = &quot;fill&quot;) +  
+  facet_grid(.~Sex) +
+  labs(x=&quot;Age&quot;, y=&quot;Count&quot;, colours=&quot;Survived&quot;, title=&quot;Survival by age&quot;)   
+histoAgeSur</code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>It looks like middle-aged people were less likely to survive that young or old ones and this relationship seems to depend on Sex.</p>
+<p>Lets engineer some additional features. First, calculate family size from “SibSp” (= n siblings/ spouses aboard) and “Parch” (= n parents/ children aboard), including the passenger him-/herself.</p>
+<pre class="r"><code>dat$fSiz &lt;- as.factor(dat$SibSp + dat$Parch + 1)
+
+barPlotfSiz &lt;- ggplot(dat[dat$set == &quot;train&quot;,], aes(fSiz, fill=Survived)) + 
+  geom_bar(stat=&quot;count&quot;, size=3, position=&#39;dodge&#39;) + 
+  customThemeCol(type = &quot;fill&quot;) +
+  labs(x=&quot;Familiy size&quot;, y=&quot;Count&quot;, colours=&quot;Survived&quot;, title=&quot;Survival by familiy size&quot;)   
+barPlotfSiz</code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>Looks like family size (“fSiz”) is of importance, too. Singles were less likely to survive than families. Smaller families were more likely to survive than larger ones.</p>
+<p>The letter in the “Cabin” variable indicates the deck. Let’s extract it and create a new “Deck” predictor and plot it.</p>
+<pre class="r"><code># function to extract letter from string.
+getLetter &lt;- function(x){
+  y &lt;- unique(na.omit(unlist(strsplit(unlist(x), &quot;[^a-zA-Z]+&quot;))))
+  if (is.na(y[1]) == TRUE) {
+    return(NA)
+  } else {
+    return(y)
+  }
+}
+
+# apply to each cell.
+for (i in 1: dim(dat)[1]) {
+  dat$Deck[i] &lt;- getLetter(dat$Cabin[i])[1]
+}
+
+# recode as factor and check out the result.
+dat$Deck &lt;- as.factor(dat$Deck)
+unique(dat$Deck)
+
+barPlotDeck &lt;- ggplot(dat[dat$set == &quot;train&quot;,], aes(Deck, fill=Survived)) + 
+  geom_bar(stat=&quot;count&quot;, size=3, position=&#39;dodge&#39;) + 
+  customThemeCol(type = &quot;fill&quot;) +
+  labs(x=&quot;Deck&quot;, y=&quot;Count&quot;, colours=&quot;Survived&quot;, title=&quot;Survival by deck&quot;)   
+barPlotDeck</code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>Might be relevant, but it seems like there’re a lot of missings.</p>
+<p>Let’s deal with that next. First, let’s set empty strings to NA in the “Embarked” column. Let’s skip the “Names”, “Ticket” and “Cabin” columns for now.</p>
+<pre class="r"><code>dat$Embarked[dat$Embarked == &quot;&quot;] &lt;- NA
+index &lt;- dat[(which(is.na(dat$Embarked))),1]
+dat[(which(is.na(dat$Embarked))),]</code></pre>
+<pre><code>##     PassengerId Survived Pclass                                      Name
+## 62           62        1      1                       Icard, Miss. Amelie
+## 830         830        1      1 Stone, Mrs. George Nelson (Martha Evelyn)
+##        Sex Age SibSp Parch Ticket Fare Cabin Embarked   set fSiz Deck
+## 62  female  38     0     0 113572   80   B28     &lt;NA&gt; train    1    B
+## 830 female  62     0     0 113572   80   B28     &lt;NA&gt; train    1    B</code></pre>
+<p>Two people are missing the “Embarked” column. Let’s look at where others with the same ticket class (“1”) embarked and how much they paid (“Fare”). Then, fill the NAs with the most likely value (similar price and the same ticket class; here: “C”).</p>
+<pre class="r"><code>dat %&gt;%
+  group_by(Embarked, Pclass) %&gt;%
+  filter(Pclass == &quot;1&quot;) %&gt;%
+  summarise(medianFare = median(Fare), n = n())</code></pre>
+<pre><code>## # A tibble: 4 x 4
+## # Groups:   Embarked [?]
+##   Embarked Pclass medianFare     n
+##     &lt;fctr&gt; &lt;fctr&gt;      &lt;dbl&gt; &lt;int&gt;
+## 1        C      1    76.7292   141
+## 2        Q      1    90.0000     3
+## 3        S      1    52.0000   177
+## 4       NA      1    80.0000     2</code></pre>
+<pre class="r"><code>dat$Embarked[index] &lt;- &quot;C&quot;</code></pre>
+<p>Let’s have a look at the missings of the whole data set.</p>
+<pre class="r"><code>missingsPlot &lt;- aggr(dat, col=c(&quot;#6d758e&quot;, &quot;#985e6d&quot;), numbers=TRUE, 
+                  sortVars=TRUE, labels=names(dat), cex.axis=.7, gap=3, combined= T,
+                  ylab=c(&quot;Missing data&quot;,&quot;Pattern&quot;)) </code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<pre><code>## 
+##  Variables sorted by number of missings: 
+##     Variable Count
+##         Deck  1014
+##     Survived   418
+##          Age   263
+##         Fare     1
+##  PassengerId     0
+##       Pclass     0
+##         Name     0
+##          Sex     0
+##        SibSp     0
+##        Parch     0
+##       Ticket     0
+##        Cabin     0
+##     Embarked     0
+##          set     0
+##         fSiz     0</code></pre>
+<p>Ok, we’re missing some decks, ages, and survivals. Check out whether the missings in the “Survival” column correspond to the size of the test data.</p>
+<pre class="r"><code>sum(is.na(dat$Survived)) == dim(titanic_test)[1]</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<p>Yes, they do. We can ignore those. There is a different number of “Cabin” and “Deck” missings, this is because we recoded empty strings in the “Cabin” column as NA in the “Deck” column. Lets make sure that indeed all “Deck” NAs are empty strings in the “Cabin” column.</p>
+<pre class="r"><code>unique(dat$Cabin[is.na(dat$Deck)])</code></pre>
+<pre><code>## [1] &quot;&quot;</code></pre>
+<p>Ok, looks good. The output from the plot shows that there’s just one missing “Fare” value. Let’s look at the details of this passenger.</p>
+<pre class="r"><code>index &lt;- dat[(which(is.na(dat$Fare))),1]
+dat[(which(is.na(dat$Fare))),]</code></pre>
+<pre><code>##      PassengerId Survived Pclass               Name  Sex  Age SibSp Parch
+## 1044        1044     &lt;NA&gt;      3 Storey, Mr. Thomas male 60.5     0     0
+##      Ticket Fare Cabin Embarked  set fSiz Deck
+## 1044   3701   NA              S test    1 &lt;NA&gt;</code></pre>
+<p>The passenger embarked in “S” and had the ticket class “3”. We’ll replace his fare with the median of all other passengers with the same ticket class who embarked here (“missingFare” = 8.05).</p>
+<pre class="r"><code>missingFare &lt;- dat %&gt;%
+  filter(Pclass == &quot;3&quot; &amp; Embarked == &quot;S&quot;) %&gt;%
+  summarise(missingFare = median(Fare, na.rm = TRUE))
+missingFare</code></pre>
+<pre><code>##   missingFare
+## 1        8.05</code></pre>
+<pre class="r"><code>dat$Fare[index] &lt;- missingFare[1,1]</code></pre>
+<p>Let’s impute “Age” and “Deck” using all but character predictors and our dependent variable using a random forest…</p>
+<pre class="r"><code>miceDat &lt;- mice(dat[, !names(dat) %in% c(&#39;PassengerId&#39;,&#39;Name&#39;,&#39;Ticket&#39;,&#39;Survived&#39;)], method=&#39;rf&#39;, printFlag = FALSE) 
+miceOut &lt;- complete(miceDat)</code></pre>
+<p>… and have a look at the results. For that, we’ll compare the distributions of the original and the imputed data.</p>
+<pre class="r"><code># age
+histoAge &lt;- ggplot(dat, aes(Age)) + 
+  geom_density(fill=&quot;#6d758e&quot;) + 
+  scale_y_continuous(limits = c(0,0.04)) +
+  customThemeCol(type = &quot;fill&quot;) +
+  labs(x=&quot;Age&quot;, y=&quot;Density&quot;, title=&quot;Titanic: original data&quot;)   
+
+histoAgeIm &lt;- ggplot(miceOut, aes(Age)) + 
+  geom_density(fill=&quot;#985e6d&quot;) + 
+  scale_y_continuous(limits = c(0,0.04)) +
+  customThemeCol(type = &quot;fill&quot;) +
+  labs(x=&quot;Age&quot;, y=&quot;Density&quot;, title=&quot;Titanic: imputation&quot;)   
+
+grid.arrange(histoAge, histoAgeIm, ncol = 2)</code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p>Looks good, so we’ll replace the original with the imputed data.</p>
+<pre class="r"><code>dat$Age &lt;- miceOut$Age</code></pre>
+<p>Finally, let’s look at the “Deck” imputation. This one is tricky, because it’s a categorical variable and we have many missings.</p>
+<pre class="r"><code>barPlotDeck &lt;- ggplot(dat, aes(Deck, fill=Deck)) + 
+  geom_bar(stat=&quot;count&quot;, size=3, position=&#39;dodge&#39;) + 
+  scale_y_continuous(limits = c(0,450)) +
+  customThemeCol(type = &quot;fill&quot;, nCol=length(levels(dat$Deck))) +
+  labs(x=&quot;Deck&quot;, y=&quot;Count&quot;, title=&quot;Titanic: original data&quot;)   
+
+barPlotDeckIm &lt;- ggplot(miceOut, aes(Deck, fill=Deck)) + 
+  geom_bar(stat=&quot;count&quot;, size=3, position=&#39;dodge&#39;) + 
+  scale_y_continuous(limits = c(0,450)) +
+  customThemeCol(type = &quot;fill&quot;, nCol=length(levels(dat$Deck))) +
+  labs(x=&quot;Deck&quot;, y=&quot;Count&quot;, title=&quot;Titanic: imputation&quot;) 
+
+grid.arrange(barPlotDeck, barPlotDeckIm, ncol = 2)</code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p>Well, not great, but who knows? Let’s save the imputation and check later whether adding the predictor “Deck” leads to a better model fit.</p>
+<pre class="r"><code>dat$Deck &lt;- miceOut$Deck</code></pre>
+<p>Check the results again to to make sure that everything looks as expected.</p>
+<pre class="r"><code># check again.
+missingsPlot &lt;- aggr(dat, col=c(&quot;#6d758e&quot;, &quot;#985e6d&quot;), numbers=TRUE, 
+                     sortVars=TRUE, labels=names(dat), cex.axis=.7, gap=3, combined= T,
+                     ylab=c(&quot;Missing data&quot;,&quot;Pattern&quot;)) </code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
+<pre><code>## 
+##  Variables sorted by number of missings: 
+##     Variable Count
+##     Survived   418
+##  PassengerId     0
+##       Pclass     0
+##         Name     0
+##          Sex     0
+##          Age     0
+##        SibSp     0
+##        Parch     0
+##       Ticket     0
+##         Fare     0
+##        Cabin     0
+##     Embarked     0
+##          set     0
+##         fSiz     0
+##         Deck     0</code></pre>
+<p>Looks good, no more missings other than those expected (“Survived”). Let’s run some models and compare their fit. First, set up two functions to extract features.</p>
+<pre class="r"><code># including the imputed &quot;Deck&quot; variable.
+getFeatFull &lt;- function(dat) {
+  feat &lt;- c(&quot;Pclass&quot;,
+            &quot;Age&quot;,
+            &quot;Sex&quot;,
+            &quot;fSiz&quot;,
+            &quot;Fare&quot;,
+            &quot;Embarked&quot;,
+            &quot;Deck&quot;)
+  feaDat &lt;- dat[,feat]
+  return(feaDat)
+}
+
+# excluding the imputed &quot;Deck&quot; variable.
+getFeat &lt;- function(dat) {
+  feat &lt;- c(&quot;Pclass&quot;,
+            &quot;Age&quot;,
+            &quot;Sex&quot;,
+            &quot;fSiz&quot;,
+            &quot;Fare&quot;,
+            &quot;Embarked&quot;)
+  feaDat &lt;- dat[,feat]
+  return(feaDat)
+}</code></pre>
+<p>Split the data into train and test again.</p>
+<pre class="r"><code>train &lt;- dat[dat$set == &quot;train&quot;,]
+test &lt;- dat[dat$set == &quot;test&quot;,]</code></pre>
+<p>Normalize continuous variables by centering and scaling. This helps model fit.</p>
+<pre class="r"><code># get normalization parameters.
+normPar &lt;- preProcess(train, method = c(&quot;center&quot;, &quot;scale&quot;))
+
+# apply.
+trainN &lt;- predict(normPar,train)</code></pre>
+<p>Create model fitting control parameters so that they are are always the same for each model and we can compare the results.</p>
+<pre class="r"><code>control &lt;- trainControl(method = &quot;cv&quot;, number = 10, repeats = 10, 
+                        verboseIter = TRUE)</code></pre>
+<p>Run three different models: a random forest, a logistic regression, and a decision tree. Notations differ a bit depending on the underlying package that is called by caret. First, run full versions including the imputed “Deck” variable, then versions excluding “Deck”.</p>
+<pre class="r"><code># full.
+rf &lt;- train(getFeatFull(trainN), trainN$Survived, method = &quot;ranger&quot;,
+            trControl = control, importance = &quot;impurity&quot;, tuneLength=15)
+
+glm &lt;- train(Survived ~ Pclass + Age + Sex + fSiz + Fare + Embarked + Deck, 
+             method = &quot;glmnet&quot;, data = trainN, trControl = control, tuneLength=15)
+
+dt &lt;- train(getFeatFull(trainN), trainN$Survived, method = &quot;rpart&quot;,
+            trControl = control, tuneLength=15)
+
+# excluding &quot;Deck&quot;.
+rf1 &lt;- train(getFeat(trainN), trainN$Survived, method = &quot;ranger&quot;, 
+            trControl = control, importance = &quot;impurity&quot;, tuneLength=15)
+
+glm1 &lt;- train(Survived ~ Pclass + Age + Sex + fSiz + Fare + Embarked,
+             method = &quot;glmnet&quot;, data = trainN, trControl = control, tuneLength=15)
+
+dt1 &lt;- train(getFeatFull(trainN), trainN$Survived, method = &quot;rpart&quot;,
+            trControl = control, tuneLength=15)</code></pre>
+<p>Plot the contribution of each predictor and compare models.</p>
+<pre class="r"><code># function to plot variable importance.
+plotImp &lt;- function(caretModel, modelName) {
+  imp &lt;- varImp(caretModel)$importance
+  imp$Feature &lt;- as.factor(rownames(imp))
+  imp$Importance &lt;- imp$Overall
+  barPlotFeatImp &lt;- ggplot(imp, aes(reorder(Feature, Importance), Importance, fill=Feature)) + 
+    geom_bar(stat=&quot;identity&quot;, size=3, position=&#39;dodge&#39;) + 
+    coord_flip() +
+    customThemeCol(type = &quot;fill&quot;, nCol=length(levels(imp$Feature))) +
+    theme(legend.position=&quot;none&quot;) +
+    labs(x=&quot;Feature&quot;, y=&quot;Importance&quot;, title=paste(&quot;Predictor importance: &quot;, modelName, sep=&quot;&quot;)) 
+  barPlotFeatImp
+}
+
+# plot predictor importance for the full models.
+a &lt;- plotImp(rf, modelName = &quot;random forest&quot;)
+b &lt;- plotImp(glm, modelName = &quot;logistic regression&quot;)
+c &lt;- plotImp(dt, modelName = &quot;decision tree&quot;)
+
+grid.arrange(a, b, c, nrow = 3)</code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-31-1.png" width="672" /></p>
+<p>Looks like there’s some differences in how the predictors are weighted. Note that we get the importance of each factor level from the logistic regression. But, consistent with the impression from the raw data, “Sex”, “Age” and “Family Size” seem to be relevant predictors for “Survival”.</p>
+<p>But which model fits best? For that, we’ll look at two parameters. Accuracy, that is, if we generate new data using our model, how well can we predict the Survival in the new data? Accuracy can be biased if classes are not perfectly balanced. To be on the safe side, we’ll also look at Kappa, as it also takes into account the expected error rate.</p>
+<pre class="r"><code># preparations: create a list of models
+models &lt;- list(rf = rf, glm = glm, dt = dt, rf1 = rf1, glm1 = glm1, dt1 = dt1)
+
+# resample the models
+resampled &lt;- resamples(models)
+
+# save accuracy as data.frame and create &quot;Model&quot; variable.
+accOut &lt;-data.frame(summary(resampled)[[3]][[1]])
+accOut$Model &lt;- as.factor(rownames(accOut))
+
+# save kappa as data.frame and create &quot;Model&quot; variable.
+kappaOut &lt;-data.frame(summary(resampled)[[3]][[2]])
+kappaOut$Model &lt;- as.factor(rownames(kappaOut))
+
+# plot the differences between model fits
+dotPlotAcc &lt;- ggplot(accOut, aes(Model, Median, colour=Model)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin=X1st.Qu., ymax=X3rd.Qu.), width=.1, position=position_dodge(0.1)) +
+  coord_flip() +
+  customThemeCol(type = &quot;colour&quot;, nCol=length(levels(accOut$Model))) +
+  theme(legend.position=&quot;none&quot;) +
+  labs(x=&quot;Model&quot;, y=&quot;Accuracy&quot;, title=paste(&quot;Model Fit: accuracy&quot;, sep=&quot;&quot;)) 
+
+dotPlotKappa &lt;- ggplot(kappaOut, aes(Model, Median, colour=Model)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin=X1st.Qu., ymax=X3rd.Qu.), width=.1, position=position_dodge(0.1)) +
+  coord_flip() +
+  customThemeCol(type = &quot;colour&quot;, nCol=length(levels(kappaOut$Model))) +
+  theme(legend.position=&quot;none&quot;) +
+  labs(x=&quot;Model&quot;, y=&quot;Kappa&quot;, title=paste(&quot;Model Fit: kappa&quot;, sep=&quot;&quot;)) 
+
+grid.arrange(dotPlotAcc, dotPlotKappa, ncol = 2)</code></pre>
+<p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-32-1.png" width="672" /></p>
+<p>I’d probably go for a model that has a good combination of a high median and small confidence interval and try to boost accuracy by engineering some more features.</p>
+<p>To wrap up, there are many lessons that can be learned from a sinking ship. Travel in small groups, being young and female seems to boost your chance at survival (at least it did so for the passengers of the Titanic back in the day). There’s much more feature engineering that could be done to boost accuracy. For example, when we checked out the missing cases for the predictor “Embarked” we saw that two women had the same ticket number, but no family relation (“Parch” and “Sibsp”). Other than families, groups of friends or colleagues probably travelled together as well. Ticket number seems to be an indication of such other travel groups, which could additionally help to predict “Survival”. Also, the predictor “Names” might include information of ethnicity or socioeconomic status (e.g., titles), which could further improve the model. Moreover, for now, I set up some basic models, but those could obviously be tuned as well (my goal here was to get a pipeline to work first). Well, that was fun! Be back soon.</p>
+
+         
+      </div>
+    </div>
+  </div>
+</div>
+
+          </div>
+      </div>
+  </div>
+  <script src="/js/jquery.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/jquery.cookie.js"> </script>
+<script src="/js/ekko-lightbox.js"></script>
+<script src="/js/jquery.scrollTo.min.js"></script>
+<script src="/js/masonry.pkgd.min.js"></script>
+<script src="/js/imagesloaded.pkgd.min.js"></script>
+<script src="/js/owl.carousel.min.js"></script>
+<script src="/js/front.js"></script>
+
+</body>
+</html>
