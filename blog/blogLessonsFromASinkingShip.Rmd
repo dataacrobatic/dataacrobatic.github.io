@@ -7,7 +7,7 @@ description: "Playing around with the Titanic data from Kaggle."
 draft: false
 image: "blog/ship.jpg"
 showonlyimage: true
-tags: ["R", "random forest", "decision tree", "logistic regression"]
+tags: ["R", "random forest", "decision tree", "generalized linear model"]
 ---
 
 <img src="/blog/ship.jpg" width="500">
@@ -350,7 +350,7 @@ control <- trainControl(method = "cv", number = 10, repeats = 10,
                         verboseIter = TRUE)
 ```
 
-Run three different models: a random forest, a logistic regression, and a decision tree. Notations differ a bit depending on the underlying package that is called by caret. First, run full versions including the imputed "Deck" variable, then versions excluding "Deck".
+Run three different models: a random forest, a generalized linear model, and a decision tree. Notations differ a bit depending on the underlying package that is called by caret. First, run full versions including the imputed "Deck" variable, then versions excluding "Deck".
 ```{r, warning=FALSE, results='hide', message=FALSE}
 # full.
 rf <- train(getFeatFull(trainN), trainN$Survived, method = "ranger",
@@ -391,11 +391,11 @@ plotImp <- function(caretModel, modelName) {
 
 # plot predictor importance for the full models.
 plotImp(rf, modelName = "random forest")
-plotImp(glm, modelName = "logistic regression")
+plotImp(glm, modelName = "generalized linear model")
 plotImp(dt, modelName = "decision tree")
 ```
 
-Looks like there's some differences in how the predictors are weighted. Note that we get the importance of each factor level from the logistic regression. But, consistent with the impression from the raw data, "Sex", "Age" and "Family Size" seem to be relevant predictors for "Survival", but others contribute as well (e.g., "Fare").
+Looks like there're quite some differences in how the predictors are weighted. Note that we get the importance of each factor level from the generalized linear model. But, consistent with the impression from the raw data, "Sex", "Age" and "Family Size" seem to be relevant predictors for "Survival", but others contribute as well (e.g., "Fare").
 
 But which model fits best? 
 For that, we'll look at two parameters. Accuracy, that is, if we generate new data using our model, how well can we predict the Survival in the new data? Accuracy can be biased if classes are not perfectly balanced. To be on the safe side, we'll also look at Kappa, as it also takes into account the expected error rate. They end up looking pretty much the same, so we're fine.
@@ -421,7 +421,7 @@ dotPlotAcc <- ggplot(accOut, aes(Model, Median, colour=Model)) +
   coord_flip() +
   customThemeCol(type = "colour", nCol=length(levels(accOut$Model))) +
   theme(legend.position="none") +
-  labs(x="Model", y="Accuracy", title=paste("Model Fit: accuracy", sep="")) 
+  labs(x="Model (Median/ 95% CI)", y="Accuracy", title=paste("Model Fit: accuracy", sep="")) 
 
 dotPlotKappa <- ggplot(kappaOut, aes(Model, Median, colour=Model)) +
   geom_point(size = 3) +
@@ -429,7 +429,7 @@ dotPlotKappa <- ggplot(kappaOut, aes(Model, Median, colour=Model)) +
   coord_flip() +
   customThemeCol(type = "colour", nCol=length(levels(kappaOut$Model))) +
   theme(legend.position="none") +
-  labs(x="Model (Median (95% CI))", y="Kappa", title=paste("Model Fit: kappa", sep="")) 
+  labs(x="Model (Median/ 95% CI)", y="Kappa", title=paste("Model Fit: kappa", sep="")) 
 
 grid.arrange(dotPlotAcc, dotPlotKappa, ncol = 2)
 ```

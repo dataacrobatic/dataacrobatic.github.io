@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Generalized Linear Model on Janina Brandes</title>
+    <link>/tags/generalized-linear-model/</link>
+    <description>Recent content in Generalized Linear Model on Janina Brandes</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy;2017 Janina Brandes</copyright>
+    <lastBuildDate>Thu, 17 Aug 2017 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/generalized-linear-model/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Lessons from a sinking ship</title>
+      <link>/blog/bloglessonsfromasinkingship/</link>
+      <pubDate>Thu, 17 Aug 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/bloglessonsfromasinkingship/</guid>
+      <description>During my first blogged dataacrobatics, I’d like to play with the Titanic data from Kaggle. My goal is to explore the data, engineer some basic features, build a few basic models, and compare their fit. Thus, my aim is to get a pipeline running and skip tweaking details for now.
+Preparations: clear workspace, detach packages, prepare custom plotting theme.
+# clear the workspace. rm(list = ls()) # detach packages to avoid interferences.</description>
+    </item>
+    
+  </channel>
+</rss>

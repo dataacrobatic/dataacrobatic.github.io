@@ -423,7 +423,7 @@ trainN &lt;- predict(normPar,train)</code></pre>
 <p>Create model fitting control parameters so that they are are always the same for each model and we can compare the results.</p>
 <pre class="r"><code>control &lt;- trainControl(method = &quot;cv&quot;, number = 10, repeats = 10, 
                         verboseIter = TRUE)</code></pre>
-<p>Run three different models: a random forest, a logistic regression, and a decision tree. Notations differ a bit depending on the underlying package that is called by caret. First, run full versions including the imputed “Deck” variable, then versions excluding “Deck”.</p>
+<p>Run three different models: a random forest, a generalized linear model, and a decision tree. Notations differ a bit depending on the underlying package that is called by caret. First, run full versions including the imputed “Deck” variable, then versions excluding “Deck”.</p>
 <pre class="r"><code># full.
 rf &lt;- train(getFeatFull(trainN), trainN$Survived, method = &quot;ranger&quot;,
             trControl = control, importance = &quot;impurity&quot;, tuneLength=15)
@@ -461,11 +461,11 @@ plotImp &lt;- function(caretModel, modelName) {
 # plot predictor importance for the full models.
 plotImp(rf, modelName = &quot;random forest&quot;)</code></pre>
 <p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-31-1.png" width="672" /></p>
-<pre class="r"><code>plotImp(glm, modelName = &quot;logistic regression&quot;)</code></pre>
+<pre class="r"><code>plotImp(glm, modelName = &quot;generalized linear model&quot;)</code></pre>
 <p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-31-2.png" width="672" /></p>
 <pre class="r"><code>plotImp(dt, modelName = &quot;decision tree&quot;)</code></pre>
 <p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-31-3.png" width="672" /></p>
-<p>Looks like there’s some differences in how the predictors are weighted. Note that we get the importance of each factor level from the logistic regression. But, consistent with the impression from the raw data, “Sex”, “Age” and “Family Size” seem to be relevant predictors for “Survival”, but others contribute as well (e.g., “Fare”).</p>
+<p>Looks like there’re quite some differences in how the predictors are weighted. Note that we get the importance of each factor level from the generalized linear model. But, consistent with the impression from the raw data, “Sex”, “Age” and “Family Size” seem to be relevant predictors for “Survival”, but others contribute as well (e.g., “Fare”).</p>
 <p>But which model fits best? For that, we’ll look at two parameters. Accuracy, that is, if we generate new data using our model, how well can we predict the Survival in the new data? Accuracy can be biased if classes are not perfectly balanced. To be on the safe side, we’ll also look at Kappa, as it also takes into account the expected error rate. They end up looking pretty much the same, so we’re fine.</p>
 <pre class="r"><code># preparations: create a list of models
 models &lt;- list(rf = rf, glm = glm, dt = dt, rf1 = rf1, glm1 = glm1, dt1 = dt1)
@@ -488,7 +488,7 @@ dotPlotAcc &lt;- ggplot(accOut, aes(Model, Median, colour=Model)) +
   coord_flip() +
   customThemeCol(type = &quot;colour&quot;, nCol=length(levels(accOut$Model))) +
   theme(legend.position=&quot;none&quot;) +
-  labs(x=&quot;Model&quot;, y=&quot;Accuracy&quot;, title=paste(&quot;Model Fit: accuracy&quot;, sep=&quot;&quot;)) 
+  labs(x=&quot;Model (Median/ 95% CI)&quot;, y=&quot;Accuracy&quot;, title=paste(&quot;Model Fit: accuracy&quot;, sep=&quot;&quot;)) 
 
 dotPlotKappa &lt;- ggplot(kappaOut, aes(Model, Median, colour=Model)) +
   geom_point(size = 3) +
@@ -496,7 +496,7 @@ dotPlotKappa &lt;- ggplot(kappaOut, aes(Model, Median, colour=Model)) +
   coord_flip() +
   customThemeCol(type = &quot;colour&quot;, nCol=length(levels(kappaOut$Model))) +
   theme(legend.position=&quot;none&quot;) +
-  labs(x=&quot;Model (Median (95% CI))&quot;, y=&quot;Kappa&quot;, title=paste(&quot;Model Fit: kappa&quot;, sep=&quot;&quot;)) 
+  labs(x=&quot;Model (Median/ 95% CI)&quot;, y=&quot;Kappa&quot;, title=paste(&quot;Model Fit: kappa&quot;, sep=&quot;&quot;)) 
 
 grid.arrange(dotPlotAcc, dotPlotKappa, ncol = 2)</code></pre>
 <p><img src="/blog/blogLessonsFromASinkingShip_files/figure-html/unnamed-chunk-32-1.png" width="672" /></p>
