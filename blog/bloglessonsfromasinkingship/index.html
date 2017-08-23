@@ -266,7 +266,7 @@ dat[(which(is.na(dat$Embarked))),]</code></pre>
 ##        Sex Age SibSp Parch Ticket Fare Cabin Embarked   set fSiz Deck
 ## 62  female  38     0     0 113572   80   B28     &lt;NA&gt; train    1    B
 ## 830 female  62     0     0 113572   80   B28     &lt;NA&gt; train    1    B</code></pre>
-<p>Two people are missing the port were they embarked the ship. Let’s look at where others with the same ticket class (“1”) embarked and how much they paid (“Fare”). Then, fill the NAs with the most likely value (similar price and the same ticket class; here: “C”).</p>
+<p>Two people are missing the port where they embarked the ship. Let’s look at where others with the same ticket class (“1”) embarked and how much they paid (“Fare”). Then, fill the NAs with the most likely value (similar price and the same ticket class; here: “C”).</p>
 <pre class="r"><code>dat %&gt;%
   group_by(Embarked, Pclass) %&gt;%
   filter(Pclass == &quot;1&quot;) %&gt;%

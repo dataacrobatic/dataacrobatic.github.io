@@ -3,10 +3,10 @@ date: 2017-08-17
 title: Lessons from a sinking ship
 type: "post"
 author: Janina Brandes
-description: "Playing around with the Titanic data from Kaggle."
+description: "Playing with the Titanic data from Kaggle."
 draft: false
 image: "blog/ship.jpg"
-showonlyimage: true
+showonlyimage: false
 tags: ["R", "random forest", "decision tree", "generalized linear model"]
 ---
 
@@ -199,7 +199,7 @@ index <- dat[(which(is.na(dat$Embarked))),1]
 dat[(which(is.na(dat$Embarked))),]
 ```
 
-Two people are missing the port were they embarked the ship. Let's look at where others with the same ticket class ("1") embarked and how much they paid ("Fare"). Then, fill the NAs with the most likely value (similar price and the same ticket class; here: "C").
+Two people are missing the port where they embarked the ship. Let's look at where others with the same ticket class ("1") embarked and how much they paid ("Fare"). Then, fill the NAs with the most likely value (similar price and the same ticket class; here: "C").
 ```{r, warning=FALSE}
 dat %>%
   group_by(Embarked, Pclass) %>%
